@@ -1,0 +1,89 @@
+// JMP Boxplot generate JSL script
+// Editor : SC Hsiao
+// Update date : 2025/04/27
+// Version V 0.1.0
+//---------------------------------------------------------------
+
+// 1. 選擇檔案
+filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+dt = Open(filePath);
+
+// 2. 獲取所有欄位名稱
+columnNames = {};
+For(i = 1, i <= N Col(dt), i++,
+    Insert Into(columnNames, Column(dt, i) << Get Name);
+);
+
+// 3. 建立選擇介面
+lb_columns = List Box(
+    columnNames,
+    <<Set Multiple Selection(1),
+    <<Set Width(400),
+    <<Set Height(300)
+);
+
+// 4. 建立GUI視窗
+nw = New Window("Select columns for Box Plot",
+    V List Box(
+        Text Box("Please select columns (use Shift/Ctrl to select multiple):"),
+        lb_columns,
+        
+        Button Box("Generate Box Plots",
+            selected = lb_columns << Get Selected;
+            
+            If(N Items(selected) == 0,
+                Throw("Please select at least one column");
+            );
+            
+            // 關閉選擇視窗
+            nw << Close Window;
+            
+            // 為每個選取的欄位生成箱型圖
+            For(i = 1, i <= N Items(selected), i++,
+                col_name = selected[i];
+                
+                // 使用標準Graph Builder語法
+                gb = dt << Graph Builder(
+                    Size(800, 600),
+                    Show Control Panel( 0 ),
+                    Variables(Y(As Column(col_name))),
+                    Elements(                        
+                        Points( Y, Legend( 2 ) ),
+                        Caption Box(
+                            Y,
+                            Legend( 3 ),
+                            Summary Statistic( "N" ),
+                            Summary Statistic 2( "Mean" ),
+                            Number Format( "Custom", Formula( value ), 5, 5 )
+                        ),
+                        Box Plot( Y, Legend( 4 ) )
+                        
+                    ),
+                    SendToReport(
+                        Dispatch( {"Caption Box"}, "", OutlineBox, {Close( 1 )} ),
+                        Dispatch({}, "graph title", TextEditBox, 
+                            {Set Text(col_name)}
+                        ),
+                        Dispatch( {}, "Graph Builder", FrameBox,
+                            {
+                                Marker Size( 2 ), 
+                                Marker Drawing Mode( "Normal" ),
+                            DispatchSeg(
+                                Box Plot Seg( 1 ),
+                                {Confidence Diamond( 1 ),
+                                Line Color( "Medium Dark Red" ), Line Width( 2 ),
+                                Fill Color( "Medium Dark Gray" ), Fill( 0 )}
+                            )}
+		                )
+                    )
+                );
+                
+                // 儲存圖形
+                save_path = "$DESKTOP/BoxPlot_" || col_name || ".png";
+                Report(gb) << Save Picture(save_path);
+                
+                Show("Box plot saved: " || save_path);
+            );
+        )
+    )
+);
