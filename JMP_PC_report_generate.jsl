@@ -23,7 +23,7 @@
 		<<Set Width(400),     // ✅ 設定寬度（例如400像素）
 		<<Set Height(300)     // ✅ 設定高度（例如300像素）
 	);
-	
+
 	// Create GUI window
 	nw = New Window("Select columns to analyze",
 		V List Box(
