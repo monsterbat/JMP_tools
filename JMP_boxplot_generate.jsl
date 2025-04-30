@@ -30,7 +30,7 @@ nw = New Window("Select columns for Box Plot",
         
         Button Box("Generate Box Plots",
             selected = lb_columns << Get Selected;
-            
+            show(selected);
             If(N Items(selected) == 0,
                 Throw("Please select at least one column");
             );
