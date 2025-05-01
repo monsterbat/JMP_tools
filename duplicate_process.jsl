@@ -1,0 +1,205 @@
+﻿// JMP Duplicate process JSL script
+// Editor : SC Hsiao
+// Update date : 2025/05/01
+// Version V 0.1
+//---------------------------------------------------------------
+
+// 1. Choose file
+filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+dt = Open(filePath);
+
+// Step 2: Fetch all column names
+columnNames = {};
+For(i = 1, i <= N Col(dt), i++,
+    Insert Into(columnNames, Column(dt, i) << Get Name);
+);
+
+// Step 3: Create two dropdowns for SN and Judge
+lb_SN = Combo Box(columnNames);
+//show("KK",lb_SN);
+lb_Judge = Combo Box(columnNames);
+
+// Create GUI window
+nw = New Window("Select SN and Judge columns",
+    V List Box(
+        Text Box("Select SN column:"),
+        lb_SN,
+        Text Box("Select Judge column:"),
+        lb_Judge,
+        Button Box("Excluded!",
+            sn_col_name = lb_SN << Get Selected;
+            //show(sn_col_name);
+            Judge_col_name = lb_Judge << Get Selected;
+            
+            If(Is Missing(sn_col_name) | Is Missing(Judge_col_name),
+                Throw("Please select both SN and Judge columns");
+            );
+            
+            // Create new column if not exist
+            If( !Contains( dt << Get Column Names(), "Duplicate" ),
+                dt << New Column("Duplicate", Numeric, Continuous);
+            );
+
+            
+            // Sort by selected SN column
+            dt << Sort(By(Column(dt, sn_col_name)), Replace Table);
+            
+            // Use associative array to track duplicates
+            count_dict = Associative Array();
+            
+            For(i = 1, i <= N Rows(dt), i++,
+                current_serial = dt[i, sn_col_name];
+                
+                If(Contains(count_dict, current_serial),
+                //show("TT",Contains(count_dict, current_serial));
+                   // show("--?",count_dict,"ii",current_serial);
+                    count_dict[current_serial] += 1;
+                ,
+                    count_dict[current_serial] = 1;
+                );
+                //show("--?",count_dict[current_serial]);
+                dt[i, "Duplicate"] = count_dict[current_serial];
+            );
+            //show("!!",count_dict[dt[2, sn_col_name]]);
+            //***************************************************
+            // Create new column if not exist
+            If( !Contains( dt << Get Column Names(), "Duplicate_G" ),
+                dt << New Column("Duplicate_G", Numeric, Continuous);
+            );
+
+            
+            // Sort by selected SN column
+            //dt << Sort(By(Column(dt, sn_col_name)), Replace Table);
+            
+            // Use associative array to track duplicates
+            //count_dict_G = Associative Array();
+            show("F",count_dict);
+            //Column(dt, "count_dict_G") << Set Data Type(Character);
+            For(i = 1, i <= N Rows(dt), i++,
+                current_serial_G = dt[i, sn_col_name];//
+                duplicate_number = dt[i, "Duplicate"];                
+                judge_val = Uppercase(Char(dt[i, Judge_col_name]));
+                show("A",judge_val);
+                show("i",i);
+                // 1
+                If(duplicate_number ==1 & judge_val == "PASS",
+                    //show("B",count_dict_G);
+                    //count_dict_G[current_serial_G] = "Done";
+                    Column(dt, "Duplicate_G")[i] = "Done";
+                    show("C",dt[1,"Duplicate_G"]);
+                );
+                If(duplicate_number ==1 & judge_val == "FAIL",
+                show("to 1 FAIL",judge_val);
+                    Column(dt, "Duplicate_G")[i] = "Unclear";
+                ); 
+                // 2               
+                If(duplicate_number == 2,
+                show("to2",i);
+                    Duplicate_G_result = dt << Get Rows Where(
+                        Char(Column(dt, sn_col_name)[i]) == current_serial_G
+                        &
+                        Num(:Duplicate) == 1                        
+                    );
+                    show(Char(Column(dt, sn_col_name)[i]),current_serial_G,Column(dt, sn_col_name),Column(dt, "Duplicate"),Duplicate_G_result);
+                    Show("找到的列數為：", N Items(Duplicate_G_result));
+                    If( N Items(Duplicate_G_result) > 0,
+                     Show("into A");
+                        Duplicate_G_result_in = dt[Duplicate_G_result[1], "Duplicate_G"];
+                        Show("into A2",Duplicate_G_result[1]);
+                    ,
+                        Duplicate_G_result_in = ""; // 或設為 "Missing" 等預設值
+                    );
+                    if(judge_val == "PASS",
+                        if(Duplicate_G_result_in == "Done",
+                        show("DA");
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                            show("DB");
+                        );
+                        if(Duplicate_G_result_in == "Unclear",
+                            Column(dt, "Duplicate_G")[i] = "Done";
+                            //dt[Duplicate_G_result[1], :Duplicate_G] = "Excluded";
+                            Column(dt, "Duplicate_G")[Duplicate_G_result[1]] = "Excluded";
+
+                        );
+                    );
+                    if(judge_val == "FAIL",
+                        if(Duplicate_G_result_in == "Done",
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                        );
+                        if(Duplicate_G_result_in == "Unclear",
+                            Column(dt, "Duplicate_G")[i] = "Unclear";
+                            Column(dt, "Duplicate_G")[Duplicate_G_result[1]] = "Excluded";
+                        );
+                    );
+                );
+
+                
+
+                // 3
+                If(duplicate_number == 3,
+                    Duplicate_G_result = dt << Get Rows Where(
+                        Char(Column(dt, sn_col_name)[i]) == current_serial_G
+                        &
+                        Num(:Duplicate) == 2                        
+                    );
+                    If( N Items(Duplicate_G_result) > 0,
+                        Duplicate_G_result_in = dt[Duplicate_G_result[1], "Duplicate_G"];
+                    ,
+                        Duplicate_G_result_in = ""; // 或設為 "Missing" 等預設值
+                    );
+                    if(judge_val == "PASS",
+                        if(Duplicate_G_result_in == "Done",
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                        );
+                        if(Duplicate_G_result_in == "Unclear",
+                            Column(dt, "Duplicate_G")[i] = "Done";
+                            Column(dt, "Duplicate_G")[Duplicate_G_result[1]] = "Excluded";
+                        );
+                        if(Duplicate_G_result_in == "Excluded",
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                        );
+                    );
+                    if(judge_val == "FAIL",
+                        if(Duplicate_G_result_in == "Done",
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                        );
+                        if(Duplicate_G_result_in == "Unclear",
+                            Column(dt, "Duplicate_G")[i] = "Unclear";
+                            Column(dt, "Duplicate_G")[Duplicate_G_result[1]] = "Excluded";
+                        );
+                        if(Duplicate_G_result_in == "Excluded",
+                            Column(dt, "Duplicate_G")[i] = "Excluded";
+                        );
+                    );
+                );
+
+                // 4
+                If(duplicate_number > 3,
+                    Column(dt, "Duplicate_G")[i] = "Excluded";                    
+                );
+
+
+
+            );
+
+            // Excluded
+            okRows = {};
+            For(i = 1, i <= N Rows(dt), i++,
+                If(Column(dt, "Duplicate_G")[i] == "Excluded",
+                    Insert Into(okRows, i)
+                );
+            );
+
+            // 如果有找到 OK 的列，就排除
+            If(N Items(okRows) > 0,
+                dt << Select Rows(okRows);
+                dt << Exclude;
+                Write("✅ 已排除 ", N Items(okRows), " 筆資料（Duplicate_G = Excluded");
+            ,
+                Write("✅ 未找到 Duplicate_G = OK 的資料");
+            );
+            //***************************************************
+            nw << Close Window;
+        )
+    )
+);

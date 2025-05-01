@@ -1,7 +1,7 @@
 // JMP correlation analysis JSL script
 // Editor : SC Hsiao
 // Update date : 2025/04/30
-// Version V 1.0.0
+// Version V 1.1
 //---------------------------------------------------------------
 
 // Step 1: Select file
@@ -55,9 +55,14 @@ nw = New Window("Select X and Y for Correlation Plot",
                 
             ),
             SendToReport(
-                Dispatch({}, "graph title", TextEditBox,
+                Dispatch({}, "graph title", 
+                TextEditBox,
                     {Set Text("Correlation: " || x_col[1] || " vs " || y_col[1])}
-                )
+                ),
+                Dispatch({}, "400", 
+                LegenBox,
+                    {Visibility("Collapse")}
+                )               
             )
         );
 
