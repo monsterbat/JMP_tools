@@ -1,0 +1,8 @@
+﻿// 開啟 Process Capability 視窗，手動選欄位的 GUI
+Eval(
+	Expr(
+		Process Capability(
+
+		)
+	)
+);

@@ -1,69 +1,19 @@
-// JMP report generate JSL script
+﻿// JMP report generate (Best fit) JSL script
 // Editor : SC Hsiao
-// Update date : 2025/04/27
-// Version V 0.2
+// Update date : 2025/05/05
+// Version V 0.1
 //---------------------------------------------------------------
 //-----------------------< ⬇ JSL Best fit code ⬇ >---------------------------
 
-	// Step 0: Choose JMP file
-	filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
-	dt = Open(filePath);
+myVars = {
 
+};
 
-	// Fetch all column names
-	columnNames = {};
-	For(i = 1, i <= N Col(dt), i++,
-		Insert Into(columnNames, Column(dt, i) << Get Name);
-	);
+processVarsExpr = Expr(Process Variables());
+For(i = 1, i <= N Items(myVars), i++,
+    Insert Into(processVarsExpr, Name Expr(myVars[i]));
+);
 
-	// Create a multi-selection list box (allow Shift/Ctrl selection)
-	lb_columns = List Box(
-		columnNames,
-		<<Set Multiple Selection(1),
-		<<Set Width(400),     // ✅ 設定寬度（例如400像素）
-		<<Set Height(300)     // ✅ 設定高度（例如300像素）
-	);
-	
-	// Create GUI window
-	nw = New Window("Select columns to analyze",
-		V List Box(
-			Text Box("Please select columns (use Shift/Ctrl to select multiple):"),
-			lb_columns,
-			
-			Button Box("Confirm Selection",
-				// Fetch selected column names
-				selected = lb_columns << Get Selected;
-				
-				// Convert selected column names into JSL matrix format
-				myVars = "{";
-				For(i = 1, i <= N Items(selected), i++,
-					myVars = myVars || "\t:" || selected[i];
-					If(i < N Items(selected),
-						myVars = myVars || ",";
-					);
-					myVars = myVars || "\n";
-				);
-				myVars = myVars || "}";
-				
-				
-				// Convert selected column names into actual JSL matrix
-				myVarsExpr = Parse("{" || Concat Items(selected, ", :") || "}");
-				myVars = Eval(myVarsExpr);
-				
-				// Close selection window
-				nw << Close Window;
-				Run Analysis(myVars);
-			)
-		)
-	);
-
-	// Define analysis function
-	Run Analysis = Function({myVars},
-	// 1. Dynamically build Process Variables expression
-	processVarsExpr = Expr(Process Variables());
-	For(i = 1, i <= N Items(myVars), i++,
-		Insert Into(processVarsExpr, Name Expr(myVars[i]));
-	);
 //------------------------------------------------------------------------------
 
 // -----------------------< ⬇ Process Capability ⬇ >---------------------------
@@ -174,7 +124,7 @@
 	pcReport << Save PDF("$DESKTOP/" || report_name || ".pdf");
 	pcReport << Save Picture("$DESKTOP/" || report_name || ".png");
 	pcReport << Save Presentation("$DESKTOP/" || report_name || ".pptx");
-)
+
 /*	// Let the user choose the save directory(Windows)
 	save_dir = Pick Directory("Please select a location to save the report", "C:\Users");
 	If(Is Empty(save_dir),
