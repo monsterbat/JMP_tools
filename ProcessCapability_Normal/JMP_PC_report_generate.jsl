@@ -1,7 +1,7 @@
-// JMP report generate JSL script
+﻿// JMP report generate (Normal distribution) JSL script
 // Editor : SC Hsiao
-// Update date : 2025/04/27
-// Version V 0.2
+// Update date : 2025/05/05
+// Version V 1.0
 //---------------------------------------------------------------
 //-----------------------< ⬇ JSL Best fit code ⬇ >---------------------------
 
