@@ -1,5 +1,6 @@
 import os
 from tkinter import filedialog, Tk
+from modules.path_helper import resource_path
 
 def extract_process_variables(jsl_text):
     """從JSL文本中提取Process Variables部分"""
@@ -31,7 +32,7 @@ def extract_process_variables(jsl_text):
 def read_jsl_template():
     """讀取JSL模板檔案"""
     try:
-        with open("JMP_PC_report_generate_bestFit.jsl", "r", encoding="utf-8") as f:
+        with open(resource_path("config/JMP_PC_report_generate_bestFit.jsl"), "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         return f"Error reading file: {str(e)}"

@@ -3,10 +3,15 @@ from tkinter import StringVar, messagebox
 import subprocess
 import platform
 
-from utils.file_operations import ask_and_open_file, open_analysis_item
-from utils.jsl_parser import extract_process_variables, save_jsl_with_vars
-from utils.ui_components import create_main_window, create_file_selection_ui, create_jsl_parser_ui
+import sys
+import os
 
+# 把 A_project 加入 sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from modules.file_operations import ask_and_open_file, open_analysis_item
+from modules.jsl_parser import extract_process_variables, save_jsl_with_vars
+from modules.ui_components import create_main_window, create_file_selection_ui, create_jsl_parser_ui
+from modules.path_helper import resource_path
 
 def open_file(filepath):
     """開啟指定路徑的檔案"""

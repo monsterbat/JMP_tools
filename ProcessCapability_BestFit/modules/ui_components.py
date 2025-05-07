@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
+from modules.path_helper import resource_path
 
 def create_main_window():
     """建立主視窗"""
@@ -76,7 +77,6 @@ def create_jsl_parser_ui(root, on_extract):
     author_note = Label(frame, text="""
                         Version: 1.0
                         If you have any questions, please contact SC Hsiao
-                        email: hsiaoshihcheng@meta.com
                         """, anchor="w", justify="left")
     author_note.pack(pady=(0, 0))
     

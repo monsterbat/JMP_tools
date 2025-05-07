@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 from tkinter import Tk, filedialog
+from modules.path_helper import resource_path
 
 def open_file(filepath):
     """開啟指定路徑的檔案"""
@@ -33,4 +34,5 @@ def ask_and_open_file():
 
 def open_analysis_item():
     """開啟分析項目檔案"""
-    open_file("best_fit_distribution.jsl") 
+    jsl_path = resource_path("config/best_fit_distribution.jsl")
+    open_file(jsl_path)
