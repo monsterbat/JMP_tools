@@ -17,7 +17,7 @@ def open_file(filepath):
     """開啟指定路徑的檔案"""
     system = platform.system()
     if system == "Windows":
-        subprocess.run(["start", filepath])
+        subprocess.run(f'start "" "{filepath}"', shell=True)
     elif system == "Darwin":  # macOS
         subprocess.run(["open", filepath])
     elif system == "Linux":
