@@ -1,0 +1,143 @@
+// JMP Boxplot generate JSL script
+// Editor : SC Hsiao
+// Update date : 2025/05/14
+// Version V 1.0
+//---------------------------------------------------------------
+
+// 1. Choose File
+filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+dt = Open(filePath);
+
+// 2. Get all column names
+columnNames = {};
+For(i = 1, i <= N Col(dt), i++,
+    Insert Into(columnNames, Column(dt, i) << Get Name);
+);
+
+// 3. Create selection interface建立選擇介面
+lb_columns_y = List Box(
+    columnNames,
+    <<Set Multiple Selection(1),
+    <<Set Width(400),
+    <<Set Height(300)
+);
+
+lb_columns_x = List Box(
+    columnNames,
+    <<Set Multiple Selection(0),  // Single selection
+    <<Set Width(400),
+    <<Set Height(300)
+);
+
+// Create display option checkboxes and add functions to handle check events
+// 建立顯示選項的複選框，並增加函數來處理勾選事件
+//  default selected
+check_confidence_diamond = Check Box("Show Confidence Diamond", 0);
+check_confidence_diamond << Set(1);
+// default un-selected
+check_outliers = Check Box("Show Outliers", 0);
+check_jitter = Check Box("Show Jitter", 0);
+
+
+// 4. Create GUI window
+nw = New Window("Select columns for Box Plot",
+    V List Box(
+        Text Box("Please select Y-axis columns (use Shift/Ctrl to select multiple):"),
+        lb_columns_y,        
+        Text Box("Please select X-Group column (optional):"),
+        lb_columns_x,
+        // Display options area
+        Panel Box("Display Options",
+            H List Box(
+                V List Box(
+                    check_confidence_diamond,
+                    check_outliers,
+                    check_jitter
+                )
+            )
+        ),
+        Button Box("Generate Box Plots",
+            selected_y = lb_columns_y << Get Selected;
+            selected_x = lb_columns_x << Get Selected;
+            
+            If(N Items(selected_y) == 0,
+                Throw("Please select at least one column for Y-axis");
+            );
+
+
+            // Get checkbox status
+            // Directly use the Get method to get the value of the checkbox (1 means selected, 0 means unselected)
+            // 直接使用 Get 方法來獲取複選框的值（1表示選中，0表示未選中）
+            show_outliers = check_outliers << Get;
+            show_jitter = check_jitter << Get;
+            show_confidence_diamond = check_confidence_diamond << Get;
+
+            // Close selection window
+            //nw << Close Window;
+            
+            // Generate box plots for each selected Y-axis column為每個選取的Y軸欄位生成箱型圖
+            For(i = 1, i <= N Items(selected_y), i++,
+                col_name_y = selected_y[i];
+                
+                // Use standard Graph Builder syntax使用標準Graph Builder語法
+                If(N Items(selected_x) > 0,
+                    // Case with X-axis variable
+                    col_name_x = selected_x[1];
+                    gb = dt << Graph Builder(
+                        Show Control Panel(0),
+                        Variables(
+                            Group X(As Column(col_name_x)),
+                            Y(As Column(col_name_y))
+                        ),
+                        Elements(
+                            Contour( Y, Legend( 10 ) ),
+                            Box Plot(
+                                X, Y,
+                                Legend(11),
+                                Jitter(show_jitter),
+                                Outliers(show_outliers),
+                                Confidence Diamond(show_confidence_diamond)
+                            ),
+                            Caption Box(
+                                Y, 
+                                Legend(12), 
+                                Summary Statistic("Mean"),
+                                Summary Statistic2( "N" ),
+                                )
+                        )
+                    );
+                    // Save image
+                    save_path = "$DESKTOP/BoxPlot_" || col_name_y || "_by_" || col_name_x || ".png";
+                ,
+                    // Case without X-axis variable
+                    gb = dt << Graph Builder(
+                        Show Control Panel(0),
+                        Variables(Y(As Column(col_name_y))),
+                        Elements(
+                            Contour(Y, Legend(10)),
+                            Box Plot(
+                                Y,
+                                Legend(11),
+                                Jitter(show_jitter),
+                                Outliers(show_outliers),
+                                Confidence Diamond(show_confidence_diamond)
+
+                            ),
+                            Caption Box(
+                                Y, 
+                                Legend(12), 
+                                Summary Statistic("Mean"),
+                                Summary Statistic2( "N" ),
+                                )
+                        )
+                    );
+                    // Save image
+                    save_path = "$DESKTOP/BoxPlot_" || col_name_y || ".png";
+                );
+                
+                Report(gb) << Save Picture(save_path);
+                Show("Box plot saved: " || save_path);
+            );
+        )
+    )
+);
