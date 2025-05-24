@@ -46,10 +46,33 @@ def open_duplicate_process():
     jsl_path = resource_path("config/duplicate_process.jsl")
     open_file(jsl_path)
 
+def open_box_plot_tool():
+    """開啟Box Plot分析工具UI界面"""
+    # 這裡使用局部導入是因為box_plot_ui.py中也導入了file_operations.py
+    # 如果在文件開頭導入會造成循環導入問題:
+    # file_operations.py -> box_plot_ui.py -> file_operations.py
+    # 所以需要在函數內部局部導入來打破這個循環
+    from modules.box_plot_ui import open_box_plot_ui
+    open_box_plot_ui()
+
+def open_correlation_tool():
+    """開啟Correlation分析工具"""
+    # 檢查配置文件是否存在
+    jsl_path = resource_path("config/correlation_tool.jsl")
+    if os.path.exists(jsl_path):
+        open_file(jsl_path)
+    else:
+        messagebox.showinfo("提示", "Correlation工具腳本尚未設置。請先創建config/correlation_tool.jsl文件。")
+
 def open_user_guide():
     """開啟使用說明文檔"""
     guide_path = resource_path("config/user_guide.md")
     open_file(guide_path)
+
+def open_box_plot_lite():
+    """開啟Box Plot Lite分析工具的JSL腳本"""
+    jsl_path = resource_path("config/box_plot_tool.jsl")
+    open_file(jsl_path)
 
 def on_extract(text_input):
     """處理JSL程式碼提取並整合到JSL檔案中

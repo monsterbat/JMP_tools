@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from modules.file_operations import ask_and_open_file, open_analysis_item, on_extract
-from modules.ui_components import create_main_window, create_data_process_ui, create_process_capability_report_ui, create_app_info_ui
+from modules.ui_components import create_main_window, create_data_process_ui, create_process_capability_report_ui, create_analysis_tools_ui, create_app_info_ui
 
 def main():
     # Initialize the main window
@@ -19,6 +19,9 @@ def main():
     text_input = create_process_capability_report_ui(
         root, jmp_file_path, ask_and_open_file, open_analysis_item, lambda: on_extract(text_input)
     )
+    
+    # Create the Analysis Tools UI
+    create_analysis_tools_ui(root)
     
     # Create the application info UI at the bottom
     create_app_info_ui(root)

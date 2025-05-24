@@ -1,18 +1,18 @@
 import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
 from modules.path_helper import resource_path
-from modules.file_operations import open_duplicate_process, open_user_guide
+from modules.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite
 
 # 常數定義
 APP_VERSION = "V1.0"
 APP_AUTHOR = "SC Hsiao"
-APP_UPDATE_DATE = "2024/05/15"
+APP_UPDATE_DATE = "2025/05/24"
 
 def create_main_window():
     """Create the main window"""
     root = tk.Tk()
-    root.title("JMP Process Capability Report Generate (Best Fit) v1.0")
-    root.geometry("800x660")
+    root.title("Data analysis tools v1.0")
+    root.geometry("850x750")  # 調整高度以適應新的分析工具區塊
     return root
 
 
@@ -28,10 +28,10 @@ def create_data_process_ui(root):
     btn_frame = tk.Frame(frame)
     btn_frame.pack()
 
-    Button(btn_frame, text="Combine Data", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Notice", "Combine Data function is under development")).pack(side="left", padx=8)
+    Button(btn_frame, text="Combine Data", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Combine Data功能開發中")).pack(side="left", padx=8)
     Button(btn_frame, text="Exclude Duplicate", width=16, font=("Arial", 12), command=open_duplicate_process).pack(side="left", padx=8)
-    Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Notice", "Setup Spec function is under development")).pack(side="left", padx=8)
-    Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Notice", "Exclude Outlier function is under development")).pack(side="left", padx=8) 
+    Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Setup Spec功能開發中")).pack(side="left", padx=8)
+    Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Exclude Outlier功能開發中")).pack(side="left", padx=8) 
 
 def create_process_capability_report_ui(root, jmp_file_path, on_select_file, on_open_analysis, on_extract):
     """建立Process Capability Report區塊，包含分析選擇、JSL輸入與提取按鈕"""
@@ -42,8 +42,8 @@ def create_process_capability_report_ui(root, jmp_file_path, on_select_file, on_
     title = tk.Label(frame, text="Process Capability Report", font=("Arial", 18, "bold"), anchor="center", justify="center")
     title.pack(fill="x", pady=(0, 10))
 
-    # Step 2 按鈕
-    btn_open_analysis = Button(frame, text="Step 2: Select Analysis Items", font=("Arial", 12), command=on_open_analysis, width=30)
+    # 按鈕
+    btn_open_analysis = Button(frame, text="Select Analysis Items", font=("Arial", 12), command=on_open_analysis, width=30)
     btn_open_analysis.pack(pady=(0, 5))
 
     # JMP檔案路徑顯示
@@ -60,6 +60,49 @@ def create_process_capability_report_ui(root, jmp_file_path, on_select_file, on_
     btn_extract.pack(pady=(0, 5))
 
     return text_input
+
+def create_analysis_tools_ui(root):
+    """創建分析工具區塊，包含BoxPlot和Correlation按鈕"""
+    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    frame.pack(fill="x", padx=10, pady=10)
+
+    # 置中標題
+    title = tk.Label(frame, text="Analysis Tools", font=("Arial", 18, "bold"), anchor="center", justify="center")
+    title.pack(fill="x", pady=(0, 10))
+
+    # 按鈕框架
+    btn_frame = tk.Frame(frame)
+    btn_frame.pack()
+
+    # 創建Box Plot按鈕
+    box_plot_btn = Button(
+        btn_frame, 
+        text="Box Plot", 
+        width=16, 
+        font=("Arial", 12), 
+        command=open_box_plot_tool
+    )
+    box_plot_btn.pack(side="left", padx=8)
+
+    # 創建Box Plot Lite按鈕
+    box_plot_lite_btn = Button(
+        btn_frame, 
+        text="Box Plot Lite", 
+        width=16, 
+        font=("Arial", 12), 
+        command=open_box_plot_lite
+    )
+    box_plot_lite_btn.pack(side="left", padx=8)
+
+    # 創建Correlation按鈕
+    correlation_btn = Button(
+        btn_frame, 
+        text="Correlation", 
+        width=16, 
+        font=("Arial", 12), 
+        command=open_correlation_tool
+    )
+    correlation_btn.pack(side="left", padx=8)
 
 def create_app_info_ui(root):
     """創建應用程序信息區塊，包含版本、作者信息和使用說明按鈕"""
