@@ -7,7 +7,7 @@ from modules.utils.path_helper import resource_path
 from modules.core.jsl_parser import extract_process_variables, save_jsl_with_vars
 from modules.utils.constants import (
     FILE_TYPE_JMP, FILE_TYPE_ALL, FILE_EXT_JMP, FILE_EXT_ALL,
-    MSG_TITLE_SUCCESS, MSG_TITLE_ERROR, MSG_TITLE_NOTICE,
+    MSG_TITLE_SUCCESS, MSG_TITLE_ERROR, MSG_TITLE_NOTICE, MSG_TITLE_INFO,
     MSG_NO_SCRIPT_TEMPLATE
 )
 
