@@ -32,7 +32,7 @@ def extract_process_variables(jsl_text):
 def read_jsl_template():
     """讀取JSL模板檔案"""
     try:
-        with open(resource_path("config/JMP_PC_report_generate_bestFit.jsl"), "r", encoding="utf-8") as f:
+        with open(resource_path("config/jmp_pc_report_generate_best_fit.jsl"), "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         return f"Error reading file: {str(e)}"
@@ -61,7 +61,7 @@ def save_jsl_with_vars(vars_text):
         root.withdraw()  # 隱藏主視窗
         
         # 預設檔案名稱
-        default_filename = "JMP_PC_report_generate_bestFit_new.jsl"
+        default_filename = "jmp_pc_report_generate_best_fit_new.jsl"
         
         # 開啟檔案儲存對話框
         file_path = filedialog.asksaveasfilename(

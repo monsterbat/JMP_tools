@@ -9,7 +9,7 @@
 - **Features:**
   - Batch processing of multiple data files.
   - Automatic report and chart generation (including PDF/PNG outputs).
-  - Modular code structure: `app/` (main program & UI), `modules/` (utility functions), `config/` (settings).
+  - Modular code structure: `app/` (main program & UI), `modules/` (utility functions), `scripts/jsl/` (JSL scripts), `docs/` (documentation).
   - Supports integration with JMP JSL scripts for further automation.
   - User-friendly interface for file selection and result visualization.
   - Customizable configuration for different analysis scenarios.
@@ -37,8 +37,8 @@
   - Preprocessing test data to ensure only valid, unique records are analyzed.
   - Quickly filtering out ambiguous or failed test results before statistical analysis.
 - **Included Scripts:**
-  - `duplicate_process.jsl`: Main script for duplicate and ambiguity exclusion.
-  - `exclude_fail.jsl`: Script for excluding failed or unwanted records.
+  - `scripts/jsl/duplicate_process.jsl`: Main script for duplicate and ambiguity exclusion.
+  - `scripts/jsl/exclude_fail.jsl`: Script for excluding failed or unwanted records.
 - **Workflow:**
   1. User selects a JMP data table.
   2. Selects the SN and Judge columns via the GUI.
@@ -62,7 +62,7 @@
 - **功能特色：**
   - 支援多檔案批次處理。
   - 自動產生報表與圖表（PDF/PNG）。
-  - 模組化架構：`app/`（主程式與介面）、`modules/`（工具模組）、`config/`（設定檔）。
+  - 模組化架構：`app/`（主程式與介面）、`modules/`（工具模組）、`scripts/jsl/`（JSL腳本）、`docs/`（文件）。
   - 可與JMP JSL腳本整合，進行自動化分析。
   - 友善的圖形化介面，方便選檔與結果瀏覽。
   - 設定檔可自訂不同分析情境。
@@ -90,8 +90,8 @@
   - 測試數據前處理，確保分析時只用到唯一且有效的資料。
   - 在統計分析前，快速過濾掉不明確或失敗的測試結果。
 - **內含腳本：**
-  - `duplicate_process.jsl`：主腳本，負責重複與不明資料的排除。
-  - `exclude_fail.jsl`：輔助腳本，用於排除失敗或不需要的資料。
+  - `scripts/jsl/duplicate_process.jsl`：主腳本，負責重複與不明資料的排除。
+  - `scripts/jsl/exclude_fail.jsl`：輔助腳本，用於排除失敗或不需要的資料。
 - **使用流程：**
   1. 使用者選擇JMP資料表。
   2. 透過GUI選擇SN與Judge欄位。
