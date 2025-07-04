@@ -3,6 +3,7 @@ from tkinter import Label, Button, Text, StringVar, messagebox
 from modules.utils.path_helper import resource_path
 from modules.utils.version import get_app_title, get_version_info
 from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report
+from modules.core.spec_setup import open_spec_setup
 
 def create_main_window():
     """Create the main window"""
@@ -48,10 +49,10 @@ def create_data_process_ui(root):
     btn_frame = tk.Frame(frame)
     btn_frame.pack()
 
-    Button(btn_frame, text="Combine Data", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Combine Data功能開發中")).pack(side="left", padx=8)
+    Button(btn_frame, text="Combine Data", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Info", "Combine Data feature is under development")).pack(side="left", padx=8)
     Button(btn_frame, text="Exclude Duplicate", width=16, font=("Arial", 12), command=open_duplicate_process).pack(side="left", padx=8)
-    Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Setup Spec功能開發中")).pack(side="left", padx=8)
-    Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("提示", "Exclude Outlier功能開發中")).pack(side="left", padx=8) 
+    Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), command=open_spec_setup).pack(side="left", padx=8)
+    Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Info", "Exclude Outlier feature is under development")).pack(side="left", padx=8) 
 
 def create_process_capability_report_ui(root, jmp_file_path, on_select_file, on_open_analysis, on_extract):
     """建立Process Capability Report區塊，包含分析選擇、JSL輸入與提取按鈕"""

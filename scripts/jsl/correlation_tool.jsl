@@ -1,71 +1,74 @@
-// JMP Correlation generate JSL script
+// JMP correlation analysis JSL script
 // Editor : SC Hsiao
-// Update date : 2024/05/15
-// Version V 1.0
+// Update date : 2025/04/30
+// Version V 1.1
 //---------------------------------------------------------------
 
-// 1. Choose File
+// Step 1: Select file
 filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
 dt = Open(filePath);
 
-// 2. Get all column names
+// Step 2: Fetch all column names
 columnNames = {};
 For(i = 1, i <= N Col(dt), i++,
     Insert Into(columnNames, Column(dt, i) << Get Name);
 );
 
-// 3. Create selection interface建立選擇介面
-lb_columns = List Box(
-    columnNames,
-    <<Set Multiple Selection(1),
-    <<Set Width(400),
-    <<Set Height(300)
-);
+// Step 3: Create two separate list boxes for X and Y selection
+lb_x = List Box(columnNames, <<Set Width(400), <<Set N Lines(10));
+lb_y = List Box(columnNames, <<Set Width(400), <<Set N Lines(10));
 
-// 4. Create GUI window
-nw = New Window("Select columns for Correlation Analysis",
-    V List Box(
-        Text Box("Please select columns for correlation analysis (use Shift/Ctrl to select multiple):"),
-        lb_columns,
-        Button Box("Generate Correlation",
-            selected_cols = lb_columns << Get Selected;
-            
-            If(N Items(selected_cols) < 2,
-                Throw("Please select at least two columns for correlation analysis");
-            );
-            
-            // 創建相關性分析
-            columns_to_use = {};
-            For(i = 1, i <= N Items(selected_cols), i++,
-                Insert Into(columns_to_use, dt:Column(selected_cols[i]));
-            );
-            
-            // 使用Multivariate平台中的相關性分析
-            corr_report = dt << Multivariate(
-                Y(columns_to_use),
-                Scatterplot Matrix(
-                    Density Ellipses(1),
-                    Histograms(1)
-                ),
-                Correlations
-            );
-            
-            // 保存相關性矩陣圖片
-            // 獲取Scatterplot Matrix報告
-            corr_plot = corr_report["Scatterplot Matrix"];
-            If(corr_plot != Empty,
-                save_path = "$DESKTOP/Correlation_Matrix_" || Format(Today(), "mmddyy") || ".png";
-                Report(corr_plot) << Save Picture(save_path);
-                Show("Correlation matrix saved: " || save_path);
-            );
-            
-            // 獲取Correlations報告
-            corr_table = corr_report["Correlations"];
-            If(corr_table != Empty,
-                save_path2 = "$DESKTOP/Correlation_Table_" || Format(Today(), "mmddyy") || ".png";
-                Report(corr_table) << Save Picture(save_path2);
-                Show("Correlation table saved: " || save_path2);
-            );
+// Step 4: Create UI window for correlation selection
+nw = New Window("Select X and Y for Correlation Plot",
+    H List Box(
+        V List Box(
+            Text Box("Please select X-axis column:"),
+            lb_x
+        ),
+        V List Box(
+            Text Box("Please select Y-axis column:"),
+            lb_y
         )
+    ),
+    Button Box("OK",
+        x_col = lb_x << Get Selected;
+        y_col = lb_y << Get Selected;
+
+        If(N Items(x_col) == 0 | N Items(y_col) == 0,
+            Throw("Please select both X and Y columns");
+        );
+
+        //nw << Close Window;
+
+        // Create correlation graph
+        gb = dt << Graph Builder(
+            Size(600, 600),
+            Show Control Panel(0),
+            Variables(
+                X(Eval(Column(x_col[1]))),
+                Y(Eval(Column(y_col[1])))
+            ),
+            Elements(
+                Points(X, Y, Legend(5)),
+                //Smoother(X, Y, Legend(6), R²( 1 )),
+                Line Of Fit( X, Y, Legend( 6 ), R²( 1 ) )
+                
+            ),
+            SendToReport(
+                Dispatch({}, "graph title", 
+                TextEditBox,
+                    {Set Text("Correlation: " || x_col[1] || " vs " || y_col[1])}
+                ),
+                Dispatch({}, "400", 
+                LegenBox,
+                    {Visibility("Collapse")}
+                )               
+            )
+        );
+
+        // Save image
+        save_path = "$DESKTOP/CorrelationPlot_" || x_col[1] || "_vs_" || y_col[1] || ".png";
+        Report(gb) << Save Picture(save_path);
+        Show("Graph saved: " || save_path);
     )
-); 
+);

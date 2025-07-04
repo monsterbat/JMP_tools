@@ -12,7 +12,7 @@ def main():
     root = create_main_window()
     
     # Create Quick analysis UI at the top
-    create_quick_analysis_ui(root)
+    #create_quick_analysis_ui(root)
     
     create_data_process_ui(root)  
     # 用於顯示選取的JMP檔案路徑

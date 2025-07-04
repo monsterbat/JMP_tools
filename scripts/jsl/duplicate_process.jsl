@@ -1,8 +1,10 @@
 ﻿// JMP Duplicate process JSL script
 // Editor : SC Hsiao
-// Update date : 2025/05/08
-// Version V 1.0
+// Update date : 2025/07/04
+// Version V 1.1
 //---------------------------------------------------------------
+
+Names Default To Here(1);
 
 // 1. Choose file
 filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
@@ -30,7 +32,99 @@ nw = New Window("Select SN and Judge columns",
             Judge_col_name = lb_Judge << Get Selected;
             
             If(Is Missing(sn_col_name) | Is Missing(Judge_col_name),
-                Throw("Please select both SN and Judge columns");
+                New Window("Error", <<Modal,
+                    V List Box(
+                        Text Box("Please select both SN and Judge columns"),
+                        Button Box("OK", Current Window() << Close Window)
+                    )
+                );
+                Stop();
+            );
+            
+            // Get unique values from Judge column
+            judge_col = Column(dt, Judge_col_name);
+            unique_values = {};
+            For(i = 1, i <= N Rows(dt), i++,
+                val = Char(judge_col[i]);
+                If(!Contains(unique_values, val),
+                    Insert Into(unique_values, val);
+                );
+            );
+            
+            // Create dialog for PASS/FAIL mapping
+            pass_values = {};
+            fail_values = {};
+            mapping_completed = 0;
+            
+            nw_mapping = New Window("Define PASS/FAIL Values", <<Modal,
+                V List Box(
+                    Text Box("Found unique values in Judge column: " || Concat Items(unique_values, ", ")),
+                    Spacer Box(Size(1, 10)),
+                    Text Box("Select values that represent PASS:"),
+                    lb_pass = List Box(unique_values, Max Selected(N Items(unique_values))),
+                    Spacer Box(Size(1, 10)),
+                    Text Box("Select values that represent FAIL:"),
+                    lb_fail = List Box(unique_values, Max Selected(N Items(unique_values))),
+                    Spacer Box(Size(1, 10)),
+                    H List Box(
+                        Button Box("OK",
+                            // Get selected values
+                            temp_pass = lb_pass << Get Selected;
+                            temp_fail = lb_fail << Get Selected;
+                            
+                            // Validation
+                            If(N Items(temp_pass) == 0 | N Items(temp_fail) == 0,
+                                New Window("Error", <<Modal,
+                                    V List Box(
+                                        Text Box("Please select at least one value for both PASS and FAIL"),
+                                        Button Box("OK", Current Window() << Close Window)
+                                    )
+                                );
+                                Stop();
+                            );
+                            
+                            // Check for overlap
+                            overlap = {};
+                            For(idx = 1, idx <= N Items(temp_pass), idx++,
+                                If(Contains(temp_fail, temp_pass[idx]),
+                                    Insert Into(overlap, temp_pass[idx]);
+                                );
+                            );
+                            
+                            If(N Items(overlap) > 0,
+                                New Window("Error", <<Modal,
+                                    V List Box(
+                                        Text Box("Value(s) cannot be both PASS and FAIL: " || Concat Items(overlap, ", ")),
+                                        Button Box("OK", Current Window() << Close Window)
+                                    )
+                                );
+                                Stop();
+                            );
+                            
+                            // If validation passes, assign values
+                            pass_values = temp_pass;
+                            fail_values = temp_fail;
+                            mapping_completed = 1;
+                            Current Window() << Close Window;
+                        ),
+                        Button Box("Cancel", 
+                            mapping_completed = 0;
+                            Current Window() << Close Window;
+                        )
+                    )
+                )
+            );
+            
+            // Check if mapping was completed
+            If(mapping_completed == 0,
+                New Window("Cancelled", <<Modal,
+                    V List Box(
+                        Text Box("PASS/FAIL mapping was cancelled. Process stopped."),
+                        Button Box("OK", Current Window() << Close Window)
+                    )
+                );
+                nw << Close Window;
+                Stop();
             );
             
             // Create new column if not exist
@@ -64,14 +158,18 @@ nw = New Window("Select SN and Judge columns",
             For(i = 1, i <= N Rows(dt), i++,
                 current_serial_G = dt[i, sn_col_name];//
                 duplicate_number = dt[i, "Duplicate"];                
-                judge_val = Uppercase(Char(dt[i, Judge_col_name]));
+                judge_val = Char(dt[i, Judge_col_name]);
+                
+                // Determine if current value is PASS or FAIL based on user selection
+                is_pass = Contains(pass_values, judge_val);
+                is_fail = Contains(fail_values, judge_val);
 
                 // Duplicate 1
-                If(duplicate_number ==1 & judge_val == "PASS",
+                If(duplicate_number ==1 & is_pass,
                     Column(dt, "Duplicate_G")[i] = "Done";
 
                 );
-                If(duplicate_number ==1 & judge_val == "FAIL",
+                If(duplicate_number ==1 & is_fail,
                     Column(dt, "Duplicate_G")[i] = "Unclear";
                 ); 
                 // Duplicate 2               
@@ -105,7 +203,7 @@ nw = New Window("Select SN and Judge columns",
                         Duplicate_G_result_in = "Missing"; 
                     );
 
-                    if(judge_val == "PASS",
+                    if(is_pass,
                         if(Duplicate_G_result_in == "Done",                    
                             Column(dt, "Duplicate_G")[i] = "Excluded";                  
                         );
@@ -114,7 +212,7 @@ nw = New Window("Select SN and Judge columns",
                             Column(dt, "Duplicate_G")[Duplicate_G_result_1[1]] = "Excluded";
                         );
                     );
-                    if(judge_val == "FAIL",
+                    if(is_fail,
                         if(Duplicate_G_result_in == "Done",
                             Column(dt, "Duplicate_G")[i] = "Excluded";
                         );
@@ -154,7 +252,7 @@ nw = New Window("Select SN and Judge columns",
                         Duplicate_G_result_in = "Missing"; 
                     );
 
-                    if(judge_val == "PASS",
+                    if(is_pass,
                         if(Duplicate_G_result_in == "Done",
                             Column(dt, "Duplicate_G")[i] = "Excluded";
                         );
@@ -166,7 +264,7 @@ nw = New Window("Select SN and Judge columns",
                             Column(dt, "Duplicate_G")[i] = "Excluded";
                         );
                     );
-                    if(judge_val == "FAIL",
+                    if(is_fail,
                         if(Duplicate_G_result_in == "Done",
                             Column(dt, "Duplicate_G")[i] = "Excluded";
                         );
@@ -208,3 +306,4 @@ nw = New Window("Select SN and Judge columns",
         )
     )
 );
+
