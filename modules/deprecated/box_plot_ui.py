@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, StringVar
 import os
-from modules.path_helper import resource_path
-from modules.file_operations import open_file, ask_and_open_file
+from modules.utils.path_helper import resource_path
+from modules.deprecated.file_operations import open_file, ask_and_open_file
 
 class BoxPlotUI:
     def __init__(self, master=None):

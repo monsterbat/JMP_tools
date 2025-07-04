@@ -1,6 +1,6 @@
 import os
 from tkinter import filedialog, Tk
-from modules.path_helper import resource_path
+from modules.utils.path_helper import resource_path
 
 def extract_process_variables(jsl_text):
     """從JSL文本中提取Process Variables部分"""

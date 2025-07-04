@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
 from modules.utils.path_helper import resource_path
 from modules.utils.version import get_app_title, get_version_info
-from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report
+from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file
 from modules.core.spec_setup import open_spec_setup
 
 def create_main_window():
@@ -46,13 +46,39 @@ def create_data_process_ui(root):
     title = tk.Label(frame, text="Data Process", font=("Arial", 18, "bold"), anchor="center", justify="center")
     title.pack(fill="x", pady=(0, 10))
 
+    # 檔案狀態顯示
+    file_path_var = StringVar()
+    status_label = tk.Label(frame, text="Choose Process data", font=("Arial", 12), anchor="center", justify="center", fg="gray")
+    status_label.pack(fill="x", pady=(0, 10))
+
+    # 按鈕框架
     btn_frame = tk.Frame(frame)
     btn_frame.pack()
 
-    Button(btn_frame, text="Combine Data", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Info", "Combine Data feature is under development")).pack(side="left", padx=8)
-    Button(btn_frame, text="Exclude Duplicate", width=16, font=("Arial", 12), command=open_duplicate_process).pack(side="left", padx=8)
-    Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), command=open_spec_setup).pack(side="left", padx=8)
-    Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), command=lambda: messagebox.showinfo("Info", "Exclude Outlier feature is under development")).pack(side="left", padx=8) 
+    # Open Data 按鈕
+    open_data_btn = Button(btn_frame, text="Open Data", width=16, font=("Arial", 12))
+    open_data_btn.pack(side="left", padx=8)
+
+    # 處理按鈕們（初始時禁用）
+    exclude_duplicate_btn = Button(btn_frame, text="Exclude Duplicate", width=16, font=("Arial", 12), state="disabled")
+    exclude_duplicate_btn.pack(side="left", padx=8)
+
+    setup_spec_btn = Button(btn_frame, text="Setup Spec", width=16, font=("Arial", 12), state="disabled")
+    setup_spec_btn.pack(side="left", padx=8)
+
+    exclude_outlier_btn = Button(btn_frame, text="Exclude Outlier", width=16, font=("Arial", 12), state="disabled")
+    exclude_outlier_btn.pack(side="left", padx=8)
+
+    # 處理按鈕清單
+    process_buttons = [exclude_duplicate_btn, setup_spec_btn, exclude_outlier_btn]
+
+    # 設定按鈕命令
+    open_data_btn.config(command=lambda: open_data_file_and_update_ui(file_path_var, status_label, process_buttons))
+    exclude_duplicate_btn.config(command=lambda: process_duplicate_with_file(file_path_var))
+    setup_spec_btn.config(command=lambda: process_spec_setup_with_file(file_path_var))
+    exclude_outlier_btn.config(command=lambda: process_outliers_with_file(file_path_var))
+
+    return frame 
 
 def create_process_capability_report_ui(root, jmp_file_path, on_select_file, on_open_analysis, on_extract):
     """建立Process Capability Report區塊，包含分析選擇、JSL輸入與提取按鈕"""

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
-from modules.path_helper import resource_path
-from modules.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite
+from modules.utils.path_helper import resource_path
+from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite
 
 # 常數定義
 APP_VERSION = "V1.1"

@@ -3,8 +3,8 @@ import platform
 import subprocess
 import tkinter as tk
 from tkinter import Tk, filedialog, messagebox
-from modules.path_helper import resource_path
-from modules.jsl_parser import extract_process_variables, save_jsl_with_vars
+from modules.utils.path_helper import resource_path
+from modules.deprecated.jsl_parser import extract_process_variables, save_jsl_with_vars
 
 def open_file(filepath):
     """開啟指定路徑的檔案"""
@@ -52,7 +52,7 @@ def open_box_plot_tool():
     # 如果在文件開頭導入會造成循環導入問題:
     # file_operations.py -> box_plot_ui.py -> file_operations.py
     # 所以需要在函數內部局部導入來打破這個循環
-    from modules.box_plot_ui import open_box_plot_ui
+    from modules.deprecated.box_plot_ui import open_box_plot_ui
     open_box_plot_ui()
 
 def open_correlation_tool():

@@ -5,6 +5,7 @@ import os
 import re
 import struct
 from datetime import datetime
+from modules.utils.path_helper import resource_path
 
 def open_spec_setup():
     """開啟 Spec Setup 功能"""
@@ -120,6 +121,8 @@ def generate_jsl_file(limits_data, source_file_path=None):
     """生成 JSL 程式碼並儲存到檔案"""
     
     jsl_lines = []
+    success_count = 0
+    fail_count = 0
     
     for index, row in limits_data.iterrows():
         variable = row.get('Variable', 'Unknown')
@@ -162,14 +165,41 @@ def generate_jsl_file(limits_data, source_file_path=None):
             jsl_code = f'Column("{variable}") << Set Property("Spec Limits", {{{", ".join(spec_params)}}});'
             print(jsl_code)
             jsl_lines.append(jsl_code)
+            success_count += 1
+        else:
+            fail_count += 1
+            print(f"❌ 跳過變數 {variable}：沒有有效的規格限制")
     
     # 儲存到檔案
     if jsl_lines:
-        save_jsl_to_file(jsl_lines, source_file_path)
+        save_jsl_to_file(jsl_lines, success_count, fail_count, source_file_path)
+    else:
+        print("❌ 沒有生成任何 JSL 程式碼")
+        messagebox.showwarning("警告", "沒有找到有效的規格限制資料")
 
-def save_jsl_to_file(jsl_lines, source_file_path=None):
+def save_jsl_to_file(jsl_lines, success_count, fail_count, source_file_path=None):
     """將 JSL 程式碼儲存到檔案"""
     try:
+        # 讀取 JSL 模板檔案
+        # 直接使用檔案的實際路徑
+        template_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "scripts", "jsl", "spec_setup.jsl")
+        
+        if not os.path.exists(template_path):
+            print(f"❌ 找不到模板檔案: {template_path}")
+            # 如果找不到模板，就使用舊的方式
+            return save_jsl_to_file_simple(jsl_lines, source_file_path)
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+        
+        # 替換規格限制內容
+        spec_limits_content = "\n".join(jsl_lines)
+        template_content = template_content.replace("// [SPEC_LIMITS_PLACEHOLDER]", spec_limits_content)
+        
+        # 替換成功計數
+        success_count_line = f"success_count = {success_count};\nfail_count = {fail_count};"
+        template_content = template_content.replace("// [SUCCESS_COUNT_PLACEHOLDER]", success_count_line)
+        
         # 決定儲存路徑
         if source_file_path:
             # 使用與 limits 檔案相同的資料夾
@@ -182,18 +212,49 @@ def save_jsl_to_file(jsl_lines, source_file_path=None):
         
         # 生成檔案名稱（加上時間戳記）
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"spec_setup_{timestamp}.jsl"
+        file_path = os.path.join(output_dir, filename)
+        
+        # 寫入檔案
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(template_content)
+        
+        print(f"✅ JSL 檔案已儲存: {file_path}")
+        print(f"   成功處理: {success_count} 個變數")
+        if fail_count > 0:
+            print(f"   失敗: {fail_count} 個變數")
+        
+        # 自動打開 JSL 檔案
+        open_jsl_file(file_path)
+        
+        return file_path
+        
+    except Exception as e:
+        print(f"❌ 儲存 JSL 檔案失敗: {str(e)}")
+        return None
+
+def save_jsl_to_file_simple(jsl_lines, source_file_path=None):
+    """簡單版本的 JSL 檔案儲存（備用方案）"""
+    try:
+        # 決定儲存路徑
+        if source_file_path:
+            output_dir = os.path.dirname(source_file_path)
+        else:
+            output_dir = "output"
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+        
+        # 生成檔案名稱
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"spec_limits_{timestamp}.jsl"
         file_path = os.path.join(output_dir, filename)
         
-        # 寫入檔案 - 只寫入純粹的 JSL Column 程式碼
+        # 寫入檔案
         with open(file_path, 'w', encoding='utf-8') as f:
-            # 寫入每一行 JSL 程式碼
             for jsl_line in jsl_lines:
                 f.write(jsl_line + "\n")
         
         print(f"✅ JSL 檔案已儲存: {file_path}")
-        
-        # 自動打開 JSL 檔案
         open_jsl_file(file_path)
         
         return file_path
