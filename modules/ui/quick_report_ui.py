@@ -10,26 +10,26 @@ class QuickReportWindow:
         self.window.geometry("600x300")
         self.window.resizable(False, False)
         
-        # 變數來儲存選擇的檔案路徑
+        # Variables to store selected file paths
         self.data_file_path = StringVar(self.window)
         self.setting_file_path = StringVar(self.window)
         
-        # 設定預設顯示文字
-        self.data_file_display = StringVar(self.window, value="未選擇檔案")
-        self.setting_file_display = StringVar(self.window, value="未選擇檔案")
+        # Set default display text
+        self.data_file_display = StringVar(self.window, value="No file selected")
+        self.setting_file_display = StringVar(self.window, value="No file selected")
         
         self.setup_ui()
         
-        # 讓視窗置中
+        # Center the window
         self.center_window()
     
     def setup_ui(self):
-        """設置界面元素"""
-        # 主框架
+        """Set up UI elements"""
+        # Main frame
         main_frame = tk.Frame(self.window, relief='raised', bd=2)
         main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         
-        # 標題
+        # Title
         title_label = tk.Label(
             main_frame, 
             text="Quick report", 
@@ -37,11 +37,11 @@ class QuickReportWindow:
         )
         title_label.pack(pady=(10, 20))
         
-        # 檔案選擇區域
+        # File selection area
         file_frame = tk.Frame(main_frame)
         file_frame.pack(pady=10)
         
-        # Data File 行
+        # Data File row
         data_row = tk.Frame(file_frame)
         data_row.pack(fill='x', pady=5)
         
@@ -62,7 +62,7 @@ class QuickReportWindow:
         )
         self.data_label.pack(side='left', fill='x', expand=True)
         
-        # Setting File 行
+        # Setting File row
         setting_row = tk.Frame(file_frame)
         setting_row.pack(fill='x', pady=5)
         
@@ -83,7 +83,7 @@ class QuickReportWindow:
         )
         self.setting_label.pack(side='left', fill='x', expand=True)
         
-        # Generate 按鈕
+        # Generate button
         generate_btn = tk.Button(
             main_frame,
             text="Generate",
@@ -94,7 +94,7 @@ class QuickReportWindow:
         generate_btn.pack(pady=(30, 10))
     
     def center_window(self):
-        """讓視窗在螢幕中央顯示"""
+        """Center window on screen"""
         self.window.update_idletasks()
         width = self.window.winfo_width()
         height = self.window.winfo_height()
@@ -103,9 +103,9 @@ class QuickReportWindow:
         self.window.geometry(f'{width}x{height}+{x}+{y}')
     
     def select_data_file(self):
-        """選擇數據檔案"""
+        """Select data file"""
         file_path = filedialog.askopenfilename(
-            title="選擇數據檔案",
+            title="Select Data File",
             filetypes=[
                 ("Excel files", "*.xlsx *.xls"),
                 ("CSV files", "*.csv"),
@@ -114,20 +114,20 @@ class QuickReportWindow:
         )
         
         if file_path:
-            print(f"選擇的數據檔案路徑: {file_path}")  # 調試資訊
+            print(f"Selected data file path: {file_path}")  # Debug info
             self.data_file_path.set(file_path)
-            # 只顯示檔案名稱，不包含路徑
+            # Only display filename, not path
             filename = os.path.basename(file_path)
-            print(f"提取的檔案名稱: {filename}")  # 調試資訊
+            print(f"Extracted filename: {filename}")  # Debug info
             self.data_file_display.set(filename)
-            print(f"設定後的顯示值: {self.data_file_display.get()}")  # 調試資訊
-            # 強制更新界面
+            print(f"Display value after setting: {self.data_file_display.get()}")  # Debug info
+            # Force UI update
             self.window.update_idletasks()
     
     def select_setting_file(self):
-        """選擇設定檔案"""
+        """Select setting file"""
         file_path = filedialog.askopenfilename(
-            title="選擇設定檔案",
+            title="Select Setting File",
             filetypes=[
                 ("JSON files", "*.json"),
                 ("XML files", "*.xml"),
@@ -137,36 +137,36 @@ class QuickReportWindow:
         )
         
         if file_path:
-            print(f"選擇的設定檔案路徑: {file_path}")  # 調試資訊
+            print(f"Selected setting file path: {file_path}")  # Debug info
             self.setting_file_path.set(file_path)
-            # 只顯示檔案名稱，不包含路徑
+            # Only display filename, not path
             filename = os.path.basename(file_path)
-            print(f"提取的檔案名稱: {filename}")  # 調試資訊
+            print(f"Extracted filename: {filename}")  # Debug info
             self.setting_file_display.set(filename)
-            print(f"設定後的顯示值: {self.setting_file_display.get()}")  # 調試資訊
-            # 強制更新界面
+            print(f"Display value after setting: {self.setting_file_display.get()}")  # Debug info
+            # Force UI update
             self.window.update_idletasks()
     
     def generate_report(self):
-        """生成報告（目前為預留功能）"""
+        """Generate report (currently placeholder function)"""
         data_file = self.data_file_path.get()
         setting_file = self.setting_file_path.get()
         
         if not data_file:
-            messagebox.showwarning("警告", "請選擇數據檔案")
+            messagebox.showwarning("Warning", "Please select data file")
             return
         
         if not setting_file:
-            messagebox.showwarning("警告", "請選擇設定檔案")
+            messagebox.showwarning("Warning", "Please select setting file")
             return
         
-        # 目前顯示選擇的檔案資訊，之後可以替換為實際的報告生成邏輯
+        # Currently displays selected file info, can be replaced with actual report generation logic later
         messagebox.showinfo(
-            "檔案資訊", 
-            f"數據檔案: {data_file}\n設定檔案: {setting_file}\n\nGenerate 功能開發中..."
+            "File Information", 
+            f"Data file: {data_file}\nSetting file: {setting_file}\n\nGenerate function under development..."
         )
 
 def open_quick_report_window(parent=None):
-    """開啟 Quick report 視窗"""
+    """Open Quick report window"""
     quick_report = QuickReportWindow(parent)
     return quick_report 

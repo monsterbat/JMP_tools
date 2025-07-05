@@ -10,12 +10,14 @@ from modules.ui.components import create_main_window, create_data_process_ui, cr
 def main():
     # Initialize the main window
     root = create_main_window()
+
     
-    # Create Quick analysis UI at the top
-    #create_quick_analysis_ui(root)
-    
+    # Future work : Create Quick analysis UI at the top
+    # create_quick_analysis_ui(root)
+
+    """Create_data_process_ui"""
     create_data_process_ui(root)  
-    # 用於顯示選取的JMP檔案路徑
+    # Used to display selected JMP file path
     jmp_file_path = StringVar()
     
     # Create the Process Capability Report UI

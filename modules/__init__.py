@@ -1,5 +1,5 @@
 """
-數據分析工具模組集
+Data Analysis Tools Module Collection
 """
 
 from modules.core import *

@@ -1,4 +1,4 @@
-﻿// 開啟 Process Capability 視窗，手動選欄位的 GUI
+﻿// Open Process Capability window, manually select columns GUI
 Eval(
 	Expr(
 		Process Capability(

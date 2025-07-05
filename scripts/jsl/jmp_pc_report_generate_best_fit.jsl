@@ -118,20 +118,8 @@ For(i = 1, i <= N Items(myVars), i++,
 	If(Is Empty(save_dir),
 		Throw("User canceled the save location selection");
 	);
-	// Modify the report output line(MAC)
+	// Modify the report output line
 	pcReport << Save Interactive HTML(save_dir || report_name || ".html");
 	pcReport << Save PDF(save_dir || report_name || ".pdf");
 	pcReport << Save Picture(save_dir || report_name || ".png");
 	pcReport << Save Presentation(save_dir || report_name || ".pptx");
-
-/*	// Let the user choose the save directory(Windows)
-	save_dir = Pick Directory("Please select a location to save the report", "C:\Users");
-	If(Is Empty(save_dir),
-		Throw("User canceled the save location selection");
-	);
-	
-
-	// Modify the report output line(Windows)
-	pcReport << Save Interactive HTML(save_dir || "\\" || report_name || ".html");
-	pcReport << Save PDF(save_dir || "\\" || report_name || ".pdf");
-*/

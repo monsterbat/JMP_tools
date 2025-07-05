@@ -1,107 +1,126 @@
-# Data analysis tools
+# Data Analysis Tools
+
+A comprehensive suite of data analysis tools with integrated JMP automation capabilities, designed for manufacturing and quality control applications.
 
 ---
 
 ## Project Overview (English)
 
-### 1. ProcessCapability_BestFit
-- **Purpose:** Advanced process capability analysis using the "Best Fit" method, suitable for non-normal distributions and real-world manufacturing data.
-- **Features:**
-  - Batch processing of multiple data files.
-  - Automatic report and chart generation (including PDF/PNG outputs).
-  - Modular code structure: `app/` (main program & UI), `modules/` (utility functions), `scripts/jsl/` (JSL scripts), `docs/` (documentation).
-  - Supports integration with JMP JSL scripts for further automation.
-  - User-friendly interface for file selection and result visualization.
-  - Customizable configuration for different analysis scenarios.
-  - Easy packaging and deployment (PyInstaller spec included).
-- **Typical Workflow:**
-  1. User selects data file(s) via the GUI.
-  2. The program performs best-fit process capability analysis.
-  3. Results and charts are automatically saved to the output directory.
-  4. Optionally, JSL scripts can be triggered for further JMP automation.
+### Main Application
+**Entry Point:** `python app/main.py`
 
-### 2. ProcessCapability_Normal
-- Standard process capability analysis for normal distributions.
-- Includes JSL scripts for automated report generation in JMP.
+The main application provides a unified interface with the following modules:
 
-### 3. ExcludeDuplicateData
-- Data cleaning tools for removing duplicates and outliers.
-- JSL scripts for batch processing of JMP data tables.
+### 1. Data Process Workflow
+- **Purpose:** Streamlined data preprocessing workflow with consistent file handling.
 - **Features:**
-  - Interactive GUI for selecting key columns (e.g., SN, Judge).
-  - Automatically marks and excludes duplicate or ambiguous records based on user-defined rules.
-  - Supports multi-level duplicate logic (e.g., single, double, triple occurrence handling).
-  - Batch processing for large datasets.
-  - Easy integration with other JMP analysis workflows.
-- **Typical Use Cases:**
-  - Preprocessing test data to ensure only valid, unique records are analyzed.
-  - Quickly filtering out ambiguous or failed test results before statistical analysis.
-- **Included Scripts:**
-  - `scripts/jsl/duplicate_process.jsl`: Main script for duplicate and ambiguity exclusion.
-  - `scripts/jsl/exclude_fail.jsl`: Script for excluding failed or unwanted records.
+  - **Open Data:** Select and open data files (JMP format supported).
+  - **Exclude Duplicate:** Remove duplicate records based on configurable criteria.
+  - **Setup Spec:** Configure specification limits from CSV/Excel files.
+  - **Exclude Outlier:** Dynamic outlier detection and removal.
 - **Workflow:**
-  1. User selects a JMP data table.
-  2. Selects the SN and Judge columns via the GUI.
-  3. Script automatically marks duplicates and ambiguous cases.
-  4. Excluded rows are removed from analysis, and a summary is displayed.
+  1. Click "Open Data" to select and open a JMP data file.
+  2. Process buttons become enabled after file selection.
+  3. All processing operations work on the selected data file.
+  4. Results are automatically saved with timestamps.
 
-### 4. JMP_boxplot_generate.jsl
-- JSL script for batch generation of boxplots from selected columns.
-- Saves images automatically to the desktop.
+### 2. Process Capability Reports
+- **Best Fit Report:** Advanced process capability analysis using best-fit distributions.
+- **Normal Report:** Standard process capability analysis for normal distributions.
+- **Features:**
+  - Automatic report generation with PDF/PNG outputs.
+  - Batch processing capabilities.
+  - Integration with JMP JSL scripts.
 
-### 5. JMP_correlation_analysis.jsl
-- JSL script for interactive correlation analysis between selected X and Y columns.
-- Automatically saves correlation plots to the desktop.
+### 3. Analysis Tools
+- **Box Plot Tool:** Interactive box plot generation with customizable parameters.
+- **Correlation Tool:** Correlation analysis between selected variables.
+- **Explore Outliers:** Dynamic outlier analysis with user-selectable variables.
+
+### 4. Key JSL Scripts
+- **`duplicate_process.jsl`:** Removes duplicate records, works with current data table.
+- **`explore_outliers.jsl`:** Dynamic outlier detection with variable selection dialog.
+- **`spec_setup.jsl`:** Template-based specification limit setup with success/failure reporting.
+- **`best_fit_distribution.jsl`:** Best-fit distribution analysis.
+- **`box_plot_tool.jsl`:** Box plot generation tool.
+- **`correlation_tool.jsl`:** Correlation analysis tool.
+
+### 5. Specification Setup
+- **Purpose:** Set specification limits for multiple variables from external files.
+- **Supported Formats:** CSV, Excel (.xlsx, .xls) - JMP files not supported.
+- **Features:**
+  - Template-based JSL generation.
+  - Automatic success/failure counting.
+  - Timestamped output files.
+  - User-friendly error messages.
+- **File Format:** Requires columns: Variable, LSL, USL, Target, Show Limits.
 
 ---
 
-## 各資料夾與腳本功能介紹（中文）
+## 功能介紹（繁體中文）
 
-### 1. ProcessCapability_BestFit
-- **用途：** 進階製程能力分析（Best Fit），適用於非常態分布與實際製造數據。
+### 主程式
+**執行方式：** `python app/main.py`
+
+主程式提供統一介面，包含以下模組：
+
+### 1. 資料處理工作流程
+- **用途：** 簡化的資料前處理工作流程，統一檔案處理方式。
 - **功能特色：**
-  - 支援多檔案批次處理。
-  - 自動產生報表與圖表（PDF/PNG）。
-  - 模組化架構：`app/`（主程式與介面）、`modules/`（工具模組）、`scripts/jsl/`（JSL腳本）、`docs/`（文件）。
-  - 可與JMP JSL腳本整合，進行自動化分析。
-  - 友善的圖形化介面，方便選檔與結果瀏覽。
-  - 設定檔可自訂不同分析情境。
-  - 提供PyInstaller打包規格，方便部署。
-- **典型流程：**
-  1. 使用者透過介面選擇資料檔案。
-  2. 程式自動執行Best Fit製程能力分析。
-  3. 結果與圖表自動儲存於指定資料夾。
-  4. 可選擇觸發JSL腳本，進行JMP自動化。
+  - **開啟資料：** 選擇並開啟資料檔案（支援JMP格式）。
+  - **排除重複：** 根據可設定條件移除重複記錄。
+  - **設定規格：** 從CSV/Excel檔案設定規格限制。
+  - **排除異常值：** 動態異常值偵測與移除。
+- **工作流程：**
+  1. 點選「開啟資料」選擇並開啟JMP資料檔案。
+  2. 選擇檔案後，處理按鈕會啟用。
+  3. 所有處理操作都作用於選定的資料檔案。
+  4. 結果會自動儲存並加上時間戳記。
 
-### 2. ProcessCapability_Normal
-- 標準常態分布製程能力分析。
-- 內含JSL腳本，自動產生JMP報表。
-
-### 3. ExcludeDuplicateData
-- 資料去重與異常值排除工具。
-- JSL腳本可批次處理JMP資料表。
+### 2. 製程能力報告
+- **Best Fit報告：** 使用最佳配適分布的進階製程能力分析。
+- **常態報告：** 標準常態分布製程能力分析。
 - **功能特色：**
-  - 互動式GUI，讓使用者選擇關鍵欄位（如SN、Judge）。
-  - 依據自訂規則，自動標記並排除重複或判斷不明的資料。
-  - 支援多層級重複判斷（如出現一次、兩次、三次的不同處理邏輯）。
-  - 適合大量資料的批次前處理。
-  - 可與其他JMP分析流程無縫整合。
-- **應用場景：**
-  - 測試數據前處理，確保分析時只用到唯一且有效的資料。
-  - 在統計分析前，快速過濾掉不明確或失敗的測試結果。
-- **內含腳本：**
-  - `scripts/jsl/duplicate_process.jsl`：主腳本，負責重複與不明資料的排除。
-  - `scripts/jsl/exclude_fail.jsl`：輔助腳本，用於排除失敗或不需要的資料。
-- **使用流程：**
-  1. 使用者選擇JMP資料表。
-  2. 透過GUI選擇SN與Judge欄位。
-  3. 腳本自動標記重複與不明資料。
-  4. 排除的資料會自動移除，並顯示排除摘要。
+  - 自動產生PDF/PNG格式報告。
+  - 批次處理能力。
+  - 整合JMP JSL腳本。
 
-### 4. JMP_boxplot_generate.jsl
-- JMP用的箱型圖自動產生腳本。
-- 可選擇多個欄位批次產生箱型圖，圖檔自動儲存於桌面。
+### 3. 分析工具
+- **箱型圖工具：** 互動式箱型圖產生，可自訂參數。
+- **相關性工具：** 選定變數間的相關性分析。
+- **探索異常值：** 動態異常值分析，可選擇變數。
 
-### 5. JMP_correlation_analysis.jsl
-- JMP用的相關性分析腳本。
-- 可互動式選擇X、Y欄位產生相關性圖，自動儲存於桌面。
+### 4. 主要JSL腳本
+- **`duplicate_process.jsl`：** 移除重複記錄，作用於目前資料表。
+- **`explore_outliers.jsl`：** 動態異常值偵測，含變數選擇對話框。
+- **`spec_setup.jsl`：** 基於範本的規格限制設定，含成功/失敗報告。
+- **`best_fit_distribution.jsl`：** 最佳配適分布分析。
+- **`box_plot_tool.jsl`：** 箱型圖產生工具。
+- **`correlation_tool.jsl`：** 相關性分析工具。
+
+### 5. 規格設定功能
+- **用途：** 從外部檔案為多個變數設定規格限制。
+- **支援格式：** CSV、Excel (.xlsx, .xls) - 不支援JMP檔案。
+- **功能特色：**
+  - 基於範本的JSL產生。
+  - 自動成功/失敗計數。
+  - 時間戳記輸出檔案。
+  - 友善的錯誤訊息。
+- **檔案格式：** 需要欄位：Variable、LSL、USL、Target、Show Limits。
+
+### 6. 專案架構
+- **`app/`：** 主程式與使用者介面
+- **`modules/`：** 核心功能模組
+  - `core/`：檔案操作、JSL解析器
+  - `ui/`：使用者介面元件
+  - `utils/`：工具函數與常數
+- **`scripts/jsl/`：** JMP JSL腳本
+- **`docs/`：** 使用者文件
+- **`output/`：** 輸出檔案資料夾
+- **`test_data/`：** 測試資料
+
+### 7. 系統需求
+- Python 3.7+
+- 相依套件：pandas, tkinter, openpyxl
+- JMP軟體（用於執行JSL腳本）
+- 支援Windows、macOS、Linux

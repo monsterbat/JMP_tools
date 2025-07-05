@@ -1,6 +1,6 @@
 """
-工具模組
-包含工具函數和輔助功能
+Utility Module
+Contains utility functions and helper features
 """
 
 from modules.utils.path_helper import *

@@ -12,7 +12,7 @@ from modules.utils.constants import (
 )
 
 def open_file(filepath):
-    """開啟指定路徑的檔案"""
+    """Open file at specified path"""
     system = platform.system()
     if system == "Windows":
         os.startfile(filepath)
@@ -24,9 +24,9 @@ def open_file(filepath):
         print("Unsupported operating system")
 
 def ask_and_open_file(jmp_file_path=None):
-    """開啟檔案選擇對話框並開啟選擇的檔案"""
+    """Open file selection dialog and open selected file"""
     root = Tk()
-    root.withdraw()  # 隱藏主視窗
+    root.withdraw()  # Hide main window
     filepath = filedialog.askopenfilename(
         title="Select File to Open",
         filetypes=[(FILE_TYPE_JMP, FILE_EXT_JMP), (FILE_TYPE_ALL, FILE_EXT_ALL)]
@@ -42,24 +42,24 @@ def ask_and_open_file(jmp_file_path=None):
         return None
 
 def open_analysis_item(file_path=None):
-    """開啟分析項目檔案"""
+    """Open analysis item file"""
     jsl_path = resource_path("config/best_fit_distribution.jsl")
     open_file(jsl_path)
 
 def open_duplicate_process():
-    """開啟Exclude Duplicate功能的JSL檔案"""
+    """Open Exclude Duplicate JSL file"""
     jsl_path = resource_path("config/duplicate_process.jsl")
     open_file(jsl_path)
 
 def open_box_plot_tool():
-    """開啟Box Plot分析工具UI界面"""
-    # 使用啟動器模塊來避免循環導入問題
+    """Open Box Plot analysis tool UI"""
+    # Use launcher module to avoid circular import issues
     from modules.utils.ui_launcher import launch_box_plot_ui
     launch_box_plot_ui()
 
 def open_correlation_tool():
-    """開啟Correlation分析工具"""
-    # 檢查配置檔案是否存在
+    """Open Correlation analysis tool"""
+    # Check if configuration file exists
     jsl_path = resource_path("config/correlation_tool.jsl")
     if os.path.exists(jsl_path):
         open_file(jsl_path)
@@ -70,22 +70,22 @@ def open_correlation_tool():
         )
 
 def open_user_guide():
-    """開啟使用說明文件"""
+    """Open user guide document"""
     guide_path = resource_path("config/user_guide.md")
     open_file(guide_path)
 
 def open_box_plot_lite():
-    """開啟Box Plot Lite分析工具的JSL腳本"""
+    """Open Box Plot Lite analysis tool JSL script"""
     jsl_path = resource_path("config/box_plot_tool.jsl")
     open_file(jsl_path)
 
 def open_quick_report():
-    """開啟Quick Report功能"""
+    """Open Quick Report function"""
     from modules.ui.quick_report_ui import open_quick_report_window
     open_quick_report_window()
 
 def open_exclude_outliers():
-    """開啟Exclude Outliers功能的JSL檔案"""
+    """Open Exclude Outliers JSL file"""
     jsl_path = resource_path("config/explore_outliers.jsl")
     if os.path.exists(jsl_path):
         open_file(jsl_path)
@@ -96,9 +96,9 @@ def open_exclude_outliers():
         )
 
 def select_data_file():
-    """選擇資料檔案但不開啟"""
+    """Select data file but don't open it"""
     root = Tk()
-    root.withdraw()  # 隱藏主視窗
+    root.withdraw()  # Hide main window
     filepath = filedialog.askopenfilename(
         title="Select Data File",
         filetypes=[(FILE_TYPE_JMP, FILE_EXT_JMP), (FILE_TYPE_ALL, FILE_EXT_ALL)]
@@ -107,17 +107,17 @@ def select_data_file():
     return filepath
 
 def open_data_file_and_update_ui(file_path_var, status_label, process_buttons):
-    """開啟資料檔案並更新UI狀態"""
+    """Open data file and update UI status"""
     filepath = select_data_file()
     if filepath:
-        # 開啟檔案
+        # Open file
         open_file(filepath)
-        # 更新UI
+        # Update UI
         import os
         filename = os.path.basename(filepath)
         file_path_var.set(filepath)
         status_label.config(text=filename)
-        # 啟用處理按鈕
+        # Enable process buttons
         for btn in process_buttons:
             btn.config(state="normal")
         print(f"Selected and opened file: {filepath}")
@@ -127,36 +127,36 @@ def open_data_file_and_update_ui(file_path_var, status_label, process_buttons):
         return None
 
 def process_duplicate_with_file(file_path_var):
-    """使用指定檔案執行 Exclude Duplicate"""
+    """Execute Exclude Duplicate with specified file"""
     filepath = file_path_var.get()
     if not filepath:
-        messagebox.showwarning("警告", "請先選擇資料檔案")
+        messagebox.showwarning("Warning", "Please select a data file first")
         return
     
-    # 這裡可以傳遞檔案路徑給 JSL 腳本
-    # 目前先開啟 JSL 檔案讓使用者手動操作
+    # Here we can pass file path to JSL script
+    # Currently just open JSL file for manual operation
     jsl_path = resource_path("config/duplicate_process.jsl")
     open_file(jsl_path)
 
 def process_spec_setup_with_file(file_path_var):
-    """使用指定檔案執行 Setup Spec"""
+    """Execute Setup Spec with specified file"""
     filepath = file_path_var.get()
     if not filepath:
-        messagebox.showwarning("警告", "請先選擇資料檔案")
+        messagebox.showwarning("Warning", "Please select a data file first")
         return
     
-    # 調用 spec_setup 功能
+    # Call spec_setup function
     from modules.core.spec_setup import open_spec_setup
     open_spec_setup()
 
 def process_outliers_with_file(file_path_var):
-    """使用指定檔案執行 Exclude Outlier"""
+    """Execute Exclude Outlier with specified file"""
     filepath = file_path_var.get()
     if not filepath:
-        messagebox.showwarning("警告", "請先選擇資料檔案")
+        messagebox.showwarning("Warning", "Please select a data file first")
         return
     
-    # 開啟 outliers JSL 檔案
+    # Open outliers JSL file
     jsl_path = resource_path("config/explore_outliers.jsl")
     if os.path.exists(jsl_path):
         open_file(jsl_path)
@@ -167,9 +167,9 @@ def process_outliers_with_file(file_path_var):
         )
 
 def on_extract(text_input):
-    """處理JSL程式碼提取並整合到JSL檔案中
+    """Process JSL code extraction and integrate into JSL file
     Args:
-        text_input (tk.Text): 包含JSL程式碼的文字輸入框
+        text_input (tk.Text): Text input box containing JSL code
     """
     input_text = text_input.get("1.0", tk.END)
     extracted = extract_process_variables(input_text)
@@ -178,13 +178,13 @@ def on_extract(text_input):
         messagebox.showerror(MSG_TITLE_ERROR, extracted)
         return
         
-    # 儲存到JSL檔案
+    # Save to JSL file
     save_result, file_path = save_jsl_with_vars(extracted)
     
-    # 顯示結果訊息
+    # Display result message
     if "Successfully saved" in save_result:
         messagebox.showinfo(MSG_TITLE_SUCCESS, save_result)
-        # 自動開啟新建立的檔案
+        # Automatically open newly created file
         if file_path:
             open_file(file_path)
     elif "Save cancelled" in save_result:
