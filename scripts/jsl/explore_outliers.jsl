@@ -1,7 +1,7 @@
 // JMP Explore Outliers with Dynamic Variable Selection
 // Editor : SC Hsiao
-// Update date : 2025/07/05
-// Version V 1.1
+// Update date : 2025/07/09
+// Version V 1.2
 // Description: Analyze outliers from currently active data table
 // Note: Requires data file to be opened first via "Open Data" button
 //---------------------------------------------------------------
@@ -36,17 +36,18 @@ For(i = 1, i <= N Col(dt), i++,
 lb_columns = List Box(
 	columnNames,
 	<<Set Multiple Selection(1),
-	<<Set Width(400),     // 設定寬度（例如400像素）
-	<<Set Height(300)     // 設定高度（例如300像素）
+	<<Set Width(400),
+	<<Set Height(300)
 );
 
 // Create GUI window
 nw = New Window("Outlier Analysis - " || table_name,
 	V List Box(
-		Text Box("Processing file: " || table_name),
-		Text Box("Rows: " || Char(N Rows(dt)) || ", Columns: " || Char(N Col(dt))),
+		Text Box("Processing file: "),
+		Text Box(table_name),
+		// Text Box("Rows: " || Char(N Rows(dt)) || ", Columns: " || Char(N Col(dt))),
 		Spacer Box(Size(1, 10)),
-		Text Box("Please select columns to analyze for outliers (use Shift/Ctrl to select multiple):"),
+		Text Box("Please select columns to analyze for outliers:"),
 		lb_columns,
 		
 		Button Box("Run Outlier Analysis",

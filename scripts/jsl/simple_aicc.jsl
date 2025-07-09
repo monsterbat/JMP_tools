@@ -1,0 +1,85 @@
+// Simple AICc Calculator
+// 直接計算 AICc 值，有欄位選擇功能
+
+// 使用當前資料表
+dt = Current Data Table();
+
+// 取得所有欄位名稱
+all_columns = dt << Get Column Names(String);
+
+// 創建選擇視窗
+lb = List Box(all_columns, <<Set Max Selected(999));
+
+nw = New Window("Select Columns for AICc Calculation",
+    V List Box(
+        Text Box("Please select columns to calculate AICc:"),
+        lb,
+        H List Box(
+            Button Box("Calculate AICc",
+                selected_columns = lb << Get Selected;
+                nw << Close Window;
+                
+                If(N Items(selected_columns) == 0,
+                    Show("No columns selected!");
+                ,
+                    Show("=== Simple AICc Calculator ===");
+                    
+                    // 對每個選中的欄位計算 AICc
+                    For(i = 1, i <= N Items(selected_columns), i++,
+                        col_name = selected_columns[i];
+                        Show("Column: " || col_name);
+                        Show("------------------------");
+                        
+                        // Normal distribution
+                        dist1 = dt << Distribution(Column(col_name), Normal(Goodness of Fit));
+                        rep1 = Report(dist1);
+                        tbl1 = rep1[TableBox(1)];
+                        aicc1 = tbl1[NumberColBox("AICc")] << Get(1);
+                        Show("Normal: " || Char(aicc1));
+                        dist1 << Close Window;
+                        
+                        // Lognormal distribution  
+                        dist2 = dt << Distribution(Column(col_name), Lognormal(Goodness of Fit));
+                        rep2 = Report(dist2);
+                        tbl2 = rep2[TableBox(1)];
+                        aicc2 = tbl2[NumberColBox("AICc")] << Get(1);
+                        Show("Lognormal: " || Char(aicc2));
+                        dist2 << Close Window;
+                        
+                        // Weibull distribution
+                        dist3 = dt << Distribution(Column(col_name), Weibull(Goodness of Fit));
+                        rep3 = Report(dist3);
+                        tbl3 = rep3[TableBox(1)];
+                        aicc3 = tbl3[NumberColBox("AICc")] << Get(1);
+                        Show("Weibull: " || Char(aicc3));
+                        dist3 << Close Window;
+                        
+                        // Gamma distribution
+                        dist4 = dt << Distribution(Column(col_name), Gamma(Goodness of Fit));
+                        rep4 = Report(dist4);
+                        tbl4 = rep4[TableBox(1)];
+                        aicc4 = tbl4[NumberColBox("AICc")] << Get(1);
+                        Show("Gamma: " || Char(aicc4));
+                        dist4 << Close Window;
+                        
+                        // 找出最小 AICc
+                        min_aicc = Min(aicc1, aicc2, aicc3, aicc4);
+                        best_dist = "";
+                        If(aicc1 == min_aicc, best_dist = "Normal");
+                        If(aicc2 == min_aicc, best_dist = "Lognormal");
+                        If(aicc3 == min_aicc, best_dist = "Weibull");
+                        If(aicc4 == min_aicc, best_dist = "Gamma");
+                        
+                        Show("Best Fit: " || best_dist || " (AICc = " || Char(min_aicc) || ")");
+                        Show("");
+                    );
+                    
+                    Show("=== Calculation Complete ===");
+                );
+            ),
+            Button Box("Cancel",
+                nw << Close Window;
+            )
+        )
+    )
+); 

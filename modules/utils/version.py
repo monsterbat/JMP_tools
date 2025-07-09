@@ -5,15 +5,16 @@
 
 # 應用程式版本資訊
 APP_NAME = "Data Analysis Tools"
-APP_VERSION = "1.1"
+APP_VERSION = "1.2"
 APP_AUTHOR = "SC Hsiao"
-APP_UPDATE_DATE = "2025/07/04"
+APP_UPDATE_DATE = "2025/07/09"
 APP_DESCRIPTION = "用於數據分析和處理的工具集"
 
 # 獲取格式化的版本資訊
 def get_version_info():
     """返回格式化的版本資訊字串"""
-    return f"Version: {APP_VERSION}        Author: {APP_AUTHOR}"
+    return f"Version: {APP_VERSION}"
+    # return f"Version: {APP_VERSION}        Author: {APP_AUTHOR}"
 
 # 獲取應用程式標題
 def get_app_title():

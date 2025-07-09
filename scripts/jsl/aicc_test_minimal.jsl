@@ -1,0 +1,80 @@
+// Minimal AICc Test - Only test one column, one distribution
+// 最簡單的測試：只測試一個欄位的一個分布
+
+// Step 1: Choose JMP file
+filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+dt = Open(filePath);
+
+// Step 2: Get first numeric column
+col_names = dt << Get Column Names(String);
+Show("Available columns: " || Char(col_names));
+
+// Find first numeric column
+test_col = "";
+For(i = 1, i <= N Items(col_names), i++,
+    col_type = Column(dt, col_names[i]) << Get Data Type;
+    Show("Column " || col_names[i] || " type: " || col_type);
+    If(col_type == "Numeric" & test_col == "",
+        test_col = col_names[i];
+    );
+);
+
+If(test_col != "",
+    Show("Testing column: " || test_col);
+    
+    // Step 3: Test Normal distribution only
+    Show("Starting Normal distribution test...");
+    
+    Try(
+        Show("Creating distribution...");
+        dist_result = dt << Distribution(
+            Column(dt, test_col),
+            Normal(Goodness of Fit(1))
+        );
+        Show("Distribution created successfully");
+        
+        Show("Getting report...");
+        report_obj = Report(dist_result);
+        Show("Report obtained");
+        
+        Show("Looking for tables...");
+        // Try different ways to find the table
+        Try(
+            Show("Method 1: Looking for 'Goodness of Fit' table");
+            aicc_table = report_obj[TableBox("Goodness of Fit")];
+            Show("Found Goodness of Fit table");
+        ,
+            Show("Method 1 failed, trying Method 2: First table");
+            aicc_table = report_obj[TableBox(1)];
+            Show("Found first table");
+        );
+        
+        Show("Looking for AICc column...");
+        Try(
+            aicc_col = aicc_table[NumberColBox("AICc")];
+            Show("Found AICc column");
+            
+            aicc_value = aicc_col << Get(1);
+            Show("SUCCESS! AICc value: " || Char(aicc_value));
+        ,
+            Show("No AICc column found");
+            
+            // Show what columns are available
+            Show("Available columns in table:");
+            col_boxes = aicc_table << Get;
+            For(j = 1, j <= N Items(col_boxes), j++,
+                Show("  Column " || Char(j) || ": " || Char(col_boxes[j]));
+            );
+        );
+        
+        // Close the window
+        dist_result << Close Window;
+        Show("Window closed");
+        
+    ,
+        Show("FAILED: Could not create distribution");
+    );
+,
+    Show("ERROR: No numeric columns found");
+    Show("Available columns were: " || Char(col_names));
+); 

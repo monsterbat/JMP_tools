@@ -66,8 +66,21 @@ nw = New Window("Select X and Y for Correlation Plot",
             )
         );
 
-        // Save image
-        save_path = "$DESKTOP/CorrelationPlot_" || x_col[1] || "_vs_" || y_col[1] || ".png";
+        // Save image to the same directory as the original file
+        // Extract directory path by finding the last "/" and taking everything before it
+        last_slash_pos = 0;
+        For(i = 1, i <= Length(filePath), i++,
+            If(Substr(filePath, i, 1) == "/",
+                last_slash_pos = i;
+            );
+        );
+        file_dir = Substr(filePath, 1, last_slash_pos - 1);
+        
+        // Extract filename without extension for better naming
+        file_name_with_ext = Substr(filePath, last_slash_pos + 1);
+        file_name_base = Substitute(file_name_with_ext, ".jmp", "");
+        
+        save_path = file_dir || "/CorrelationPlot_" || file_name_base || "_" || x_col[1] || "_vs_" || y_col[1] || ".png";
         Report(gb) << Save Picture(save_path);
         Show("Graph saved: " || save_path);
     )

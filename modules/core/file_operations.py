@@ -71,7 +71,7 @@ def open_correlation_tool():
 
 def open_user_guide():
     """Open user guide document"""
-    guide_path = resource_path("config/user_guide.md")
+    guide_path = resource_path("docs/Data Analysis Tools SOP.pdf")
     open_file(guide_path)
 
 def open_box_plot_lite():
@@ -191,3 +191,25 @@ def on_extract(text_input):
         messagebox.showinfo(MSG_TITLE_NOTICE, save_result)
     else:
         messagebox.showerror(MSG_TITLE_ERROR, save_result) 
+
+def open_normal_distribution():
+    """Open Normal distribution JSL file"""
+    jsl_path = resource_path("config/jmp_pc_report_generate_normal.jsl")
+    if os.path.exists(jsl_path):
+        open_file(jsl_path)
+    else:
+        messagebox.showinfo(
+            MSG_TITLE_INFO, 
+            MSG_NO_SCRIPT_TEMPLATE.format("Normal distribution", "scripts/jsl/jmp_pc_report_generate_normal.jsl")
+        ) 
+
+def open_file_jsl():
+    """Open file selection JSL script"""
+    jsl_path = resource_path("config/open_file.jsl")
+    if os.path.exists(jsl_path):
+        open_file(jsl_path)
+    else:
+        messagebox.showinfo(
+            MSG_TITLE_INFO, 
+            MSG_NO_SCRIPT_TEMPLATE.format("Open File", "scripts/jsl/open_file.jsl")
+        ) 

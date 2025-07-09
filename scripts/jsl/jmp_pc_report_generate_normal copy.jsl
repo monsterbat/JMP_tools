@@ -1,31 +1,14 @@
 ﻿// JMP report generate (Normal distribution) JSL script
 // Editor : SC Hsiao
 // Update date : 2025/05/05
-// Version V 1.1
-// Description: Process Normal distribution analysis from currently active data table
-// Note: Requires data file to be opened first via "Open Data" button
+// Version V 1.0
 //---------------------------------------------------------------
-//-----------------------< ⬇ JSL Normal distribution code ⬇ >---------------------------
+//-----------------------< ⬇ JSL Best fit code ⬇ >---------------------------
 
-	// Step 0: Use current active data table (no need to pick file)
-	// Get the current data table
-	dt = Current Data Table();
+	// Step 0: Choose JMP file
+	filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+	dt = Open(filePath);
 
-	// Check if there's an active data table
-	If(Is Empty(dt),
-		New Window("Error", <<Modal,
-			V List Box(
-				Text Box("No data table is currently open. Please open a data file first."),
-				Button Box("OK", Current Window() << Close Window)
-			)
-		);
-		Stop();
-	);
-
-	// Display current data table information
-	table_name = dt << Get Name;
-	Write("✅ Processing data table: ", table_name);
-	Write("   Rows: ", N Rows(dt), ", Columns: ", N Col(dt));
 
 	// Fetch all column names
 	columnNames = {};
@@ -36,17 +19,14 @@
 	// Create a multi-selection list box (allow Shift/Ctrl selection)
 	lb_columns = List Box(
 		columnNames,
-		<<Set Max Selected(N Items(columnNames)),
+		<<Set Multiple Selection(1),
 		<<Set Width(400),     // ✅ 設定寬度（例如400像素）
 		<<Set Height(300)     // ✅ 設定高度（例如300像素）
 	);
 	
 	// Create GUI window
-	nw = New Window("Normal Distribution Analysis - " || table_name,
+	nw = New Window("Select columns to analyze",
 		V List Box(
-			Text Box("Processing file: " || table_name),
-			Text Box("Rows: " || Char(N Rows(dt)) || ", Columns: " || Char(N Col(dt))),
-			Spacer Box(Size(1, 10)),
 			Text Box("Please select columns (use Shift/Ctrl to select multiple):"),
 			lb_columns,
 			
@@ -174,26 +154,35 @@
 	pcReport = Report(pc_r1);
 	
 
-	// Use table name as base filename
-	base_name = table_name;
-	// Remove file extension if present using Substitute function
-	base_name = Substitute(base_name, ".jmp", "");
 	
+	base_name = "pcg"; 
+
 	//  Generate a filename with date
 	today_str = Format(Today(), "yyyymmdd");
-	report_name = base_name || "_NormalReport_" || today_str;
+	report_name = base_name || "_ProcessReport_" || today_str;
 	
 	
 
-	// Let the user choose the save directory
+	// Let the user choose the save directory(MAC)
 	save_dir = Pick Directory("Please select a location to save the report", "$DESKTOP");
 	If(Is Empty(save_dir),
 		Throw("User canceled the save location selection");
 	);
 
-	// Generate report files
-	pcReport << Save Interactive HTML(save_dir || report_name || ".html");
-	pcReport << Save PDF(save_dir || report_name || ".pdf");
-	pcReport << Save Picture(save_dir || report_name || ".png");
-	pcReport << Save Presentation(save_dir || report_name || ".pptx");
+	// Modify the report output line(MAC)
+	pcReport << Save Interactive HTML("$DESKTOP/" || report_name || ".html");
+	pcReport << Save PDF("$DESKTOP/" || report_name || ".pdf");
+	pcReport << Save Picture("$DESKTOP/" || report_name || ".png");
+	pcReport << Save Presentation("$DESKTOP/" || report_name || ".pptx");
 )
+/*	// Let the user choose the save directory(Windows)
+	save_dir = Pick Directory("Please select a location to save the report", "C:\Users");
+	If(Is Empty(save_dir),
+		Throw("User canceled the save location selection");
+	);
+	
+
+	// Modify the report output line(Windows)
+	pcReport << Save Interactive HTML(save_dir || "\\" || report_name || ".html");
+	pcReport << Save PDF(save_dir || "\\" || report_name || ".pdf");
+*/

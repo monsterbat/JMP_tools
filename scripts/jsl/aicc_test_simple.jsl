@@ -1,0 +1,69 @@
+// Simple AICc Test JSL script
+// Test basic distribution functionality
+
+// Step 1: Choose JMP file
+filePath = Pick File("Choose JMP file", {"JMP Files|jmp"});
+dt = Open(filePath);
+
+// Step 2: Test single distribution on first numeric column
+col_names = dt << Get Column Names(String);
+numeric_cols = {};
+For(i = 1, i <= N Items(col_names), i++,
+    If(Column(dt, col_names[i]) << Get Data Type == "Numeric",
+        Insert Into(numeric_cols, col_names[i]);
+    );
+);
+
+If(N Items(numeric_cols) > 0,
+    test_col = numeric_cols[1];
+    Show("Testing column: " || test_col);
+    
+    // Test Normal distribution
+    Try(
+        dist_result = dt << Distribution(
+            Column(dt, test_col),
+            Normal(Goodness of Fit(1))
+        );
+        
+        Show("Distribution created successfully");
+        
+        // Try to extract AICc
+        Try(
+            report_obj = Report(dist_result);
+            Show("Report extracted");
+            
+            // Look for tables
+            tables = report_obj << XPath("//TableBox");
+            Show("Number of tables found: " || Char(N Items(tables)));
+            
+            // Try first table
+            If(N Items(tables) > 0,
+                first_table = tables[1];
+                Show("First table found");
+                
+                // Look for AICc column
+                Try(
+                    aicc_col = first_table[NumberColBox("AICc")];
+                    If(!Is Missing(aicc_col),
+                        aicc_value = aicc_col << Get(1);
+                        Show("AICc value: " || Char(aicc_value));
+                    ,
+                        Show("No AICc column found");
+                    );
+                ,
+                    Show("Error accessing AICc column");
+                );
+            ,
+                Show("No tables found in report");
+            );
+        ,
+            Show("Error extracting report");
+        );
+        
+        dist_result << Close Window;
+    ,
+        Show("Error creating distribution");
+    );
+,
+    Show("No numeric columns found");
+); 

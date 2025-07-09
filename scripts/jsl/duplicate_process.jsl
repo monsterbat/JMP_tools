@@ -1,10 +1,10 @@
-﻿// JMP Duplicate process JSL script
-// Editor : SC Hsiao
-// Update date : 2025/07/05
-// Version V 1.3
-// Description: Process duplicate records from currently active data table
-// Note: Requires data file to be opened first via "Open Data" button
-//---------------------------------------------------------------
+﻿// JMP Duplicate Process JSL Script
+// Editor: SC Hsiao
+// Update date : 2025/07/09
+// Version V 1.4
+// ============================================================================
+// PURPOSE: Remove duplicate records using AAB Rule
+// ============================================================================
 
 Names Default To Here(1);
 
@@ -41,14 +41,21 @@ lb_Judge = Combo Box(columnNames);
 // Create GUI window
 nw = New Window("Duplicate Process - " || table_name,
     V List Box(
-        Text Box("Processing file: " || table_name),
-        Text Box("Rows: " || Char(N Rows(dt)) || ", Columns: " || Char(N Col(dt))),
-        Spacer Box(Size(1, 10)),
-        Text Box("Select SN column:"),
+        Text Box("Processing file: "),
+        Text Box(table_name),
+        //Text Box("Rows: " || Char(N Rows(dt)) || ", Columns: " || Char(N Col(dt))),
+        Spacer Box(Size(1, 15)),
+        
+        // AAB Rule explanation
+        Text Box("Final result base on AAB judgment", <<Set Font Size(12), <<Set Font Style("Bold")),
+        Spacer Box(Size(1, 15)),
+        
+        Text Box("Select SN column:", <<Set Font Style("Bold")),
         lb_SN,
-        Text Box("Select Judge column:"),
+        Spacer Box(Size(1, 5)),
+        Text Box("Select Judge column:", <<Set Font Style("Bold")),
         lb_Judge,
-        Button Box("Excluded!",
+        Button Box("Next",
             sn_col_name = lb_SN << Get Selected;
             Judge_col_name = lb_Judge << Get Selected;
             
@@ -77,18 +84,20 @@ nw = New Window("Duplicate Process - " || table_name,
             fail_values = {};
             mapping_completed = 0;
             
-            nw_mapping = New Window("Define PASS/FAIL Values", <<Modal,
+            nw_mapping = New Window("Define PASS/FAIL Values for AAB Rule", <<Modal,
                 V List Box(
-                    Text Box("Found unique values in Judge column: " || Concat Items(unique_values, ", ")),
+                    Text Box("Final result base on AAB judgment", <<Set Font Style("Bold")),
+                    Text Box("Please define PASS and FAIL below"),
                     Spacer Box(Size(1, 10)),
-                    Text Box("Select values that represent PASS:"),
+
+                    Text Box("Select values that represent PASS:", <<Set Font Style("Bold")),
                     lb_pass = List Box(unique_values, Max Selected(N Items(unique_values))),
                     Spacer Box(Size(1, 10)),
-                    Text Box("Select values that represent FAIL:"),
+                    Text Box("Select values that represent FAIL:", <<Set Font Style("Bold")),
                     lb_fail = List Box(unique_values, Max Selected(N Items(unique_values))),
                     Spacer Box(Size(1, 10)),
                     H List Box(
-                        Button Box("OK",
+                        Button Box("Exclude duplicate",
                             // Get selected values
                             temp_pass = lb_pass << Get Selected;
                             temp_fail = lb_fail << Get Selected;
