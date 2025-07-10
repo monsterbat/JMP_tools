@@ -155,7 +155,7 @@ def create_report_generate_ui(root, jmp_file_path, on_extract):
     text_input.pack(pady=(0, 10))
 
     # Extract button
-    btn_extract = Button(frame, text="Extract Process Variables Data", font=("Arial", 12), command=on_extract, width=30)
+    btn_extract = Button(frame, text="Generate in report format", font=("Arial", 12), command=on_extract, width=30)
     btn_extract.pack(pady=(0, 5))
 
     return text_input

@@ -14,7 +14,8 @@ a = Analysis(
         ('scripts/jsl/exclude_fail.jsl', 'scripts/jsl'),
         ('scripts/jsl/explore_outliers.jsl', 'scripts/jsl'),
         ('scripts/jsl/spec_setup.jsl', 'scripts/jsl'),
-        ('docs/user_guide.md', 'docs'),
+        ('scripts/jsl/open_file.jsl', 'scripts/jsl'),
+        ('docs/Data Analysis Tools SOP.pdf', 'docs'),
         ],
     hiddenimports=[
         'modules.core.file_operations', 

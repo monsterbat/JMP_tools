@@ -205,7 +205,7 @@ def open_normal_distribution():
 
 def open_file_jsl():
     """Open file selection JSL script"""
-    jsl_path = resource_path("config/open_file.jsl")
+    jsl_path = resource_path("scripts/jsl/open_file.jsl")
     if os.path.exists(jsl_path):
         open_file(jsl_path)
     else:
