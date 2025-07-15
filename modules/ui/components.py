@@ -67,17 +67,17 @@ def create_open_data_ui(root):
     btn_frame = tk.Frame(frame)
     btn_frame.pack()
 
-    # Open Data button (original version)
+    # Open Data(jsl) button (隱藏但保留，未來可能使用)
+    open_data_jsl_btn = Button(btn_frame, text="Open Data(jsl)", width=16, font=("Arial", 12, "bold"))
+    # open_data_jsl_btn.pack(side="left", padx=8, pady=5)  # 註解掉不顯示
+
+    # Open Data button (原本的 Beta 版本，現在是主要版本)
     open_data_btn = Button(btn_frame, text="Open Data", width=16, font=("Arial", 12, "bold"))
     open_data_btn.pack(side="left", padx=8, pady=5)
 
-    # Open Data(Beta) button 
-    open_data_beta_btn = Button(btn_frame, text="Open Data(Beta)", width=16, font=("Arial", 12, "bold"))
-    open_data_beta_btn.pack(side="left", padx=8, pady=5)
-
     # Set button commands
-    open_data_btn.config(command=open_file_jsl)
-    open_data_beta_btn.config(command=open_file_jsl_beta)
+    open_data_jsl_btn.config(command=open_file_jsl)
+    open_data_btn.config(command=open_file_jsl_beta)
 
     return frame
 
