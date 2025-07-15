@@ -37,8 +37,12 @@ def read_jsl_template():
     except Exception as e:
         return f"Error reading file: {str(e)}"
 
-def save_jsl_with_vars(vars_text):
-    """將變數儲存到JSL檔案中"""
+def save_jsl_with_vars(vars_text, source_file_path=None):
+    """將變數儲存到JSL檔案中
+    Args:
+        vars_text: JSL變數文字
+        source_file_path: 來源檔案路徑（用於決定存檔位置）
+    """
     try:
         # 讀取原始檔案
         template = read_jsl_template()
@@ -56,23 +60,23 @@ def save_jsl_with_vars(vars_text):
         # 構建新的檔案內容
         new_content = template[:start_idx + 10] + vars_text + template[end_idx:]
         
-        # 讓使用者選擇儲存位置和檔案名稱
-        root = Tk()
-        root.withdraw()  # 隱藏主視窗
+        # 決定存檔位置：與打開檔案同目錄，或桌面作為備選
+        import datetime
         
-        # 預設檔案名稱
-        default_filename = "jmp_pc_report_generate_best_fit_new.jsl"
+        # 產生時間戳記
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # 開啟檔案儲存對話框
-        file_path = filedialog.asksaveasfilename(
-            title="Select Save Location",
-            defaultextension=".jsl",
-            initialfile=default_filename,
-            filetypes=[("JSL Files", "*.jsl"), ("All Files", "*.*")]
-        )
+        # 預設檔案名稱（包含時間戳記）
+        default_filename = f"jmp_pc_report_generate_best_fit_{timestamp}.jsl"
         
-        if not file_path:  # 使用者取消
-            return "Save cancelled", None
+        if source_file_path and os.path.exists(source_file_path):
+            # 如果有來源檔案路徑，存到同一個資料夾
+            save_dir = os.path.dirname(source_file_path)
+            file_path = os.path.join(save_dir, default_filename)
+        else:
+            # 沒有來源檔案路徑，存到桌面
+            desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+            file_path = os.path.join(desktop_path, default_filename)
             
         # 儲存新檔案
         with open(file_path, "w", encoding="utf-8") as f:

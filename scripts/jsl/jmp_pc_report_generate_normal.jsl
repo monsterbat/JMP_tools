@@ -178,7 +178,7 @@
 	base_name = table_name;
 	// Remove file extension if present using Substitute function
 	base_name = Substitute(base_name, ".jmp", "");
-	
+
 	//  Generate a filename with date
 	today_str = Format(Today(), "yyyymmdd");
 	report_name = base_name || "_NormalReport_" || today_str;

@@ -11,6 +11,9 @@ from modules.utils.constants import (
     MSG_NO_SCRIPT_TEMPLATE
 )
 
+# 全域變數來追蹤當前打開的檔案路徑（Beta功能用）
+current_file_path_beta = None
+
 def open_file(filepath):
     """Open file at specified path"""
     system = platform.system()
@@ -22,6 +25,64 @@ def open_file(filepath):
         subprocess.run(["xdg-open", filepath])
     else:
         print("Unsupported operating system")
+
+def open_with_jmp(filepath):
+    """Open file specifically with JMP application"""
+    system = platform.system()
+    
+    try:
+        if system == "Darwin":  # macOS
+            # 嘗試多種 JMP 應用程式名稱（常見的排在前面）
+            jmp_app_names = ["JMP 18", "JMP 19", "JMP 17", "JMP Pro 18", "JMP Pro 19", "JMP Pro 17", "JMP", "JMP Pro"]
+            
+            jmp_opened = False
+            for app_name in jmp_app_names:
+                result = subprocess.run(["open", "-a", app_name, filepath], 
+                                      capture_output=True, text=True)
+                
+                if result.returncode == 0:
+                    jmp_opened = True
+                    break
+            
+            if not jmp_opened:
+                # 如果找不到 JMP，回到一般開啟方式
+                open_file(filepath)
+                    
+        elif system == "Windows":
+            # Windows 版本 - 可能需要調整 JMP 路徑
+            jmp_paths = [
+                r"C:\Program Files\SAS\JMP\19\jmp.exe",
+                r"C:\Program Files\SAS\JMP\18\jmp.exe",
+                r"C:\Program Files\SAS\JMP\17\jmp.exe",
+                r"C:\Program Files\SAS\JMP\16\jmp.exe", 
+                r"C:\Program Files\SAS\JMP\15\jmp.exe",
+                r"C:\Program Files (x86)\SAS\JMP\19\jmp.exe",
+                r"C:\Program Files (x86)\SAS\JMP\18\jmp.exe",
+                r"C:\Program Files (x86)\SAS\JMP\17\jmp.exe",
+                r"C:\Program Files (x86)\SAS\JMP\16\jmp.exe",
+                r"C:\Program Files (x86)\SAS\JMP\15\jmp.exe"
+            ]
+            
+            jmp_found = False
+            for jmp_path in jmp_paths:
+                if os.path.exists(jmp_path):
+                    subprocess.run([jmp_path, filepath])
+                    jmp_found = True
+                    break
+            
+            if not jmp_found:
+                print("JMP not found, using default application")
+                open_file(filepath)
+                
+        else:
+            # Linux 或其他系統，回到一般開啟方式
+            print("JMP path not configured for this system, using default application")
+            open_file(filepath)
+            
+    except Exception as e:
+        print(f"Error opening with JMP: {e}")
+        # 如果有錯誤，回到一般開啟方式
+        open_file(filepath)
 
 def ask_and_open_file(jmp_file_path=None):
     """Open file selection dialog and open selected file"""
@@ -178,8 +239,8 @@ def on_extract(text_input):
         messagebox.showerror(MSG_TITLE_ERROR, extracted)
         return
         
-    # Save to JSL file
-    save_result, file_path = save_jsl_with_vars(extracted)
+    # Save to JSL file (use Beta path if available)
+    save_result, file_path = save_jsl_with_vars(extracted, current_file_path_beta)
     
     # Display result message
     if "Successfully saved" in save_result:
@@ -212,4 +273,31 @@ def open_file_jsl():
         messagebox.showinfo(
             MSG_TITLE_INFO, 
             MSG_NO_SCRIPT_TEMPLATE.format("Open File", "scripts/jsl/open_file.jsl")
-        ) 
+        )
+
+def open_file_jsl_beta():
+    """Open file selection dialog and track file path (Beta)"""
+    global current_file_path_beta
+    
+    root = Tk()
+    root.withdraw()  # 隱藏主視窗
+    
+    # 打開檔案選擇對話框（支援 CSV 和 JMP）
+    file_path = filedialog.askopenfilename(
+        title="Choose data file (Beta)",
+        filetypes=[("CSV Files", "*.csv"), ("JMP Files", "*.jmp"), ("All Files", "*.*")]
+    )
+    
+    if file_path:
+        # 保存當前檔案路徑
+        current_file_path_beta = file_path
+        
+        # 根據檔案類型決定開啟方式
+        file_extension = os.path.splitext(file_path)[1].lower()
+        
+        if file_extension == '.jmp':
+            # .jmp 檔案用系統預設方式開啟（通常已設定為 JMP）
+            open_file(file_path)
+        else:
+            # 其他檔案（如 CSV）強制用 JMP 開啟
+            open_with_jmp(file_path) 

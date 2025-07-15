@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
 from modules.utils.path_helper import resource_path
 from modules.utils.version import get_app_title, get_version_info
-from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file, open_normal_distribution, open_file_jsl
+from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file, open_normal_distribution, open_file_jsl, open_file_jsl_beta
 from modules.core.spec_setup import open_spec_setup
 
 def create_main_window():
@@ -67,12 +67,17 @@ def create_open_data_ui(root):
     btn_frame = tk.Frame(frame)
     btn_frame.pack()
 
-    # Open Data button (centered and emphasized)
+    # Open Data button (original version)
     open_data_btn = Button(btn_frame, text="Open Data", width=16, font=("Arial", 12, "bold"))
-    open_data_btn.pack(pady=5)
+    open_data_btn.pack(side="left", padx=8, pady=5)
 
-    # Set button command
+    # Open Data(Beta) button 
+    open_data_beta_btn = Button(btn_frame, text="Open Data(Beta)", width=16, font=("Arial", 12, "bold"))
+    open_data_beta_btn.pack(side="left", padx=8, pady=5)
+
+    # Set button commands
     open_data_btn.config(command=open_file_jsl)
+    open_data_beta_btn.config(command=open_file_jsl_beta)
 
     return frame
 
