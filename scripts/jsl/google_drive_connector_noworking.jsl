@@ -1,0 +1,267 @@
+/*
+	Google Drive 檔案連接器 (完全修正版)
+	
+	功能：
+	1. 從 Google Drive URL 下載檔案
+	2. 自動開啟下載的檔案
+	3. 支援多種檔案格式 (CSV, Excel, JMP)
+	
+	使用方法：
+	1. 確保檔案已設定為「任何人都可以檢視」
+	2. 複製 Google Drive 分享連結
+	3. 執行此腳本並貼上連結
+	
+	作者：Data Analysis Tools
+	版本：1.2 (完全修正版)
+*/
+
+// 從 Google Drive URL 提取檔案 ID
+Extract_Google_Drive_File_ID = Function({url},
+	{Default Local},
+	
+	// 支援的 URL 格式模式
+	patterns = {
+		"/file/d/([a-zA-Z0-9-_]+)",  // https://drive.google.com/file/d/FILE_ID/view
+		"id=([a-zA-Z0-9-_]+)",        // https://drive.google.com/open?id=FILE_ID
+		"/d/([a-zA-Z0-9-_]+)/"        // 其他格式
+	};
+	
+	file_id = "";
+	
+	// 嘗試每個模式
+	For(i = 1, i <= N Items(patterns), i++,
+		pattern = patterns[i];
+		
+		// 使用 Regex 提取檔案 ID
+		If(Regex(url, pattern) != {},
+			matches = Regex(url, pattern);
+			If(N Items(matches) >= 2,
+				file_id = matches[2];
+				Break();
+			);
+		);
+	);
+	
+	Return(file_id);
+);
+
+// 下載 Google Drive 檔案 (修正版)
+Download_Google_Drive_File = Function({url, target_dir},
+	{Default Local},
+	
+	// 提取檔案 ID
+	file_id = Extract_Google_Drive_File_ID(url);
+	
+	If(file_id == "",
+		Throw("無法從 URL 中提取 Google Drive 檔案 ID");
+	);
+	
+	// 設定下載目錄
+	If(Is Missing(target_dir) | target_dir == "",
+		target_dir = Get Default Directory();
+	);
+	
+	// 建立下載 URL
+	download_url = "https://drive.google.com/uc?export=download&id=" || file_id;
+	
+	// 設定輸出檔案名稱（暫時使用檔案 ID）
+	output_file = target_dir || "/" || file_id || "_downloaded_file";
+	
+	Write("正在下載 Google Drive 檔案 (ID: " || file_id || ")..." || "\!n");
+	
+	Try(
+		// 使用 JMP 的 HTTP Get 功能下載檔案
+		http_response = HTTP Get(download_url);
+		
+		If(http_response["status"] == 200,
+			// 儲存檔案
+			file_content = http_response["body"];
+			
+			// 嘗試根據回應標頭決定檔案類型
+			content_type = http_response["headers"]["Content-Type"];
+			
+			If(Contains(content_type, "text/csv"),
+				output_file = output_file || ".csv";
+			,Contains(content_type, "application/vnd.ms-excel") | Contains(content_type, "application/vnd.openxmlformats"),
+				output_file = output_file || ".xlsx";
+			,
+				// 預設為 CSV
+				output_file = output_file || ".csv";
+			);
+			
+			// 寫入檔案
+			f = Create File(output_file);
+			f << file_content;
+			f << Close File;
+			
+			Write("✅ 檔案下載成功: " || output_file || "\!n");
+			Return(output_file);
+		,
+			Throw("檔案下載失敗，HTTP 狀態碼: " || Char(http_response["status"]));
+		);
+	,
+		// 如果 HTTP Get 失敗，嘗試替代方法
+		Write("⚠️  直接下載失敗，請嘗試手動下載方法\!n");
+		Write("請手動執行以下步驟：\!n");
+		Write("1. 開啟瀏覽器並前往: " || download_url || "\!n");
+		Write("2. 下載檔案到本地目錄\!n");
+		Write("3. 使用 JMP 的檔案選擇對話框開啟下載的檔案\!n");
+		
+		Throw("自動下載失敗，請使用手動下載方法");
+	);
+);
+
+// 主要的 Google Drive 檔案開啟功能
+Open_Google_Drive_File = Function({},
+	{Default Local},
+	
+	// 建立輸入對話框
+	New Window("Google Drive 檔案連接器",
+		V List Box(
+			Text Box("請輸入 Google Drive 檔案連結："),
+			Text Box(""),
+			Text Box("支援的連結格式："),
+			Text Box("• https://drive.google.com/file/d/FILE_ID/view?usp=sharing"),
+			Text Box("• https://drive.google.com/file/d/FILE_ID/view?usp=drive_link"),
+			Text Box("• https://drive.google.com/open?id=FILE_ID"),
+			Text Box(""),
+			Text Box("注意事項："),
+			Text Box("• 請確保檔案已設定為「任何人都可以檢視」"),
+			Text Box("• 支援的檔案格式：CSV, Excel, JMP"),
+			Text Box("• 檔案將會下載到目前工作目錄"),
+			Text Box(""),
+			
+			// URL 輸入框
+			H List Box(
+				Text Box("Google Drive 檔案連結: "),
+				Text Edit Box(
+					"https://drive.google.com/file/d/119sslkCIIlacTa1gucenrweXI8EFJobZ/view?usp=drive_link",
+					<<Set Width(500),
+					<<Set Name("url_input")
+				)
+			),
+			Text Box(""),
+			
+			// 狀態顯示
+			Text Box("準備就緒", <<Set Name("status_box")),
+			Text Box(""),
+			
+			// 按鈕
+			H List Box(
+				Button Box("下載並開啟檔案",
+					// 獲取 URL 輸入
+					url_input_box = Current Window()["url_input"];
+					url = url_input_box << Get Text;
+					
+					// 獲取狀態顯示框
+					status_box = Current Window()["status_box"];
+					
+					If(url == "",
+						status_box << Set Text("❌ 請輸入 Google Drive 檔案連結");
+						Return();
+					);
+					
+					Try(
+						status_box << Set Text("🔄 正在下載檔案...");
+						
+						// 下載檔案
+						downloaded_file = Download_Google_Drive_File(url, "");
+						
+						status_box << Set Text("📂 檔案下載完成，正在開啟...");
+						
+						// 開啟檔案
+						Open(downloaded_file);
+						
+						status_box << Set Text("✅ 檔案已成功開啟！");
+						
+						// 顯示成功訊息
+						success_msg = "✅ Google Drive 檔案已成功開啟！\!n\!n";
+						success_msg ||= "檔案位置: " || downloaded_file || "\!n";
+						success_msg ||= "您現在可以在 JMP 中使用這個檔案。";
+						
+						New Window("成功", Text Box(success_msg));
+					,
+						status_box << Set Text("❌ 下載失敗: " || Exception Message);
+						
+						// 提供手動下載說明
+						manual_msg = "自動下載失敗，建議使用手動方式：\!n\!n";
+						manual_msg ||= "1. 複製以下連結到瀏覽器：\!n";
+						manual_msg ||= "   " || url || "\!n\!n";
+						manual_msg ||= "2. 點擊「下載」按鈕\!n";
+						manual_msg ||= "3. 將檔案儲存到本地目錄\!n";
+						manual_msg ||= "4. 使用 檔案 → 開啟 來開啟下載的檔案\!n\!n";
+						manual_msg ||= "常見問題：\!n";
+						manual_msg ||= "• 確保檔案權限設定為「任何人都可以檢視」\!n";
+						manual_msg ||= "• 檢查網路連線是否正常\!n";
+						manual_msg ||= "• 如果是大型檔案，建議使用瀏覽器下載";
+						
+						New Window("手動下載說明", Text Box(manual_msg));
+					);
+				),
+				
+				Button Box("取消",
+					Current Window() << Close Window;
+				),
+				
+				Button Box("說明",
+					help_msg = "Google Drive 檔案連接器使用說明\!n\!n";
+					help_msg ||= "🔗 支援的連結格式：\!n";
+					help_msg ||= "• 分享連結 (view?usp=sharing)\!n";
+					help_msg ||= "• 直接連結 (view?usp=drive_link)\!n";
+					help_msg ||= "• 舊版連結 (open?id=FILE_ID)\!n\!n";
+					help_msg ||= "📁 支援的檔案格式：\!n";
+					help_msg ||= "• CSV 檔案 (.csv)\!n";
+					help_msg ||= "• Excel 檔案 (.xlsx, .xls)\!n";
+					help_msg ||= "• JMP 檔案 (.jmp)\!n\!n";
+					help_msg ||= "⚙️  設定要求：\!n";
+					help_msg ||= "• 檔案必須設定為「任何人都可以檢視」\!n";
+					help_msg ||= "• 需要網路連線\!n";
+					help_msg ||= "• JMP 版本需支援 HTTP 功能\!n\!n";
+					help_msg ||= "🛠️  故障排除：\!n";
+					help_msg ||= "• 如果自動下載失敗，請使用手動下載\!n";
+					help_msg ||= "• 檢查 Google Drive 檔案權限設定\!n";
+					help_msg ||= "• 確認連結格式正確";
+					
+					New Window("使用說明", Text Box(help_msg));
+				)
+			)
+		)
+	);
+);
+
+// 簡化版本 - 直接處理特定連結
+Process_Specific_Google_Drive_File = Function({},
+	{Default Local},
+	
+	// 您提供的特定連結
+	google_drive_url = "https://drive.google.com/file/d/119sslkCIIlacTa1gucenrweXI8EFJobZ/view?usp=drive_link";
+	
+	Write("處理特定的 Google Drive 檔案...\!n");
+	Write("連結: " || google_drive_url || "\!n");
+	
+	Try(
+		downloaded_file = Download_Google_Drive_File(google_drive_url, "");
+		Open(downloaded_file);
+		
+		Write("✅ 檔案處理完成！\!n");
+	,
+		Write("❌ 檔案處理失敗: " || Exception Message || "\!n");
+		
+		// 提供手動下載連結
+		direct_download_url = "https://drive.google.com/uc?export=download&id=119sslkCIIlacTa1gucenrweXI8EFJobZ";
+		Write("請嘗試手動下載: " || direct_download_url || "\!n");
+	);
+);
+
+// 執行主要功能
+// 取消註解下面任一行來執行相應功能：
+
+// 開啟通用 Google Drive 檔案對話框
+Open_Google_Drive_File();
+
+// 或者直接處理您提供的特定檔案
+// Process_Specific_Google_Drive_File();
+
+Write("Google Drive 檔案連接器載入完成\!n");
+Write("使用 Open_Google_Drive_File() 來開啟通用對話框\!n");
+Write("使用 Process_Specific_Google_Drive_File() 來處理特定檔案\!n"); 

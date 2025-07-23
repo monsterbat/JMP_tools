@@ -1,0 +1,19 @@
+/*
+	簡單的檔案開啟按鈕
+	
+	功能：點擊按鈕自動執行 open_file.jsl
+	
+	作者：Data Analysis Tools
+*/
+
+// 創建簡單的按鈕視窗
+New Window("檔案開啟器", 
+    V List Box(
+        Text Box("點擊按鈕開啟檔案選擇器"),
+        Spacer Box(Size(10, 10)),
+        Button Box("開啟檔案", 
+            // 執行 open_file.jsl (使用完整的相對路徑)
+            Include("scripts/jsl/open_file.jsl");
+        )
+    )
+); 

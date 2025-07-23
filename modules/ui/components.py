@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import Label, Button, Text, StringVar, messagebox
 from modules.utils.path_helper import resource_path
 from modules.utils.version import get_app_title, get_version_info
-from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file, open_normal_distribution, open_file_jsl, open_file_jsl_beta
+from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file, open_normal_distribution, open_file_jsl, open_file_jsl_beta, open_best_fit_beta, open_google_drive_file
 from modules.core.spec_setup import open_spec_setup
 
 def create_main_window():
@@ -75,9 +75,14 @@ def create_open_data_ui(root):
     open_data_btn = Button(btn_frame, text="Open Data", width=16, font=("Arial", 12, "bold"))
     open_data_btn.pack(side="left", padx=8, pady=5)
 
+    # Google Drive button (新增)
+    google_drive_btn = Button(btn_frame, text="Google Drive", width=16, font=("Arial", 12, "bold"))
+    google_drive_btn.pack(side="left", padx=8, pady=5)
+
     # Set button commands
     open_data_jsl_btn.config(command=open_file_jsl)
     open_data_btn.config(command=open_file_jsl_beta)
+    google_drive_btn.config(command=open_google_drive_file)
 
     return frame
 
@@ -143,6 +148,17 @@ def create_process_capability_ui(root, on_open_analysis):
         command=on_open_analysis
     )
     best_fit_btn.pack(side="left", padx=8)
+
+    # Best Fit(beta) button - 新增的按鈕
+    best_fit_beta_btn = Button(
+        btn_frame, 
+        text="Best Fit(beta)", 
+        width=16, 
+        font=("Arial", 12), 
+        command=open_best_fit_beta
+    )
+    best_fit_beta_btn.pack(side="left", padx=8)
+    
     return frame
 
 def create_report_generate_ui(root, jmp_file_path, on_extract):

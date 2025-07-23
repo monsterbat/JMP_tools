@@ -1,0 +1,12 @@
+# Google Drive 測試專案所需套件
+
+# Google Drive 下載支援
+gdown==5.2.0
+requests==2.32.3
+
+# 資料處理 (可選，如果需要分析功能)
+pandas==2.2.3
+openpyxl==3.1.2
+
+# 基本GUI支援 (通常Python內建)
+# tkinter 通常是內建的，不需要安裝 
