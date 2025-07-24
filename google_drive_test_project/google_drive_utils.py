@@ -228,6 +228,312 @@ def open_google_drive_dialog():
     except Exception as e:
         messagebox.showerror("錯誤", f"開啟對話框失敗: {str(e)}")
 
+def open_enterprise_google_drive_dialog():
+    """開啟企業版 Google Drive 檔案連接器對話框"""
+    
+    def show_auth_info():
+        """顯示認證設定說明"""
+        info_text = """
+🏢 企業版 Google Drive 存取設定說明
+
+📋 需要設定步驟：
+1. 前往 Google Cloud Console (https://console.cloud.google.com)
+2. 建立新專案或選擇現有專案
+3. 啟用 Google Drive API
+4. 建立憑證 (OAuth 2.0 用戶端 ID)
+5. 下載憑證檔案並命名為 'credentials.json'
+6. 將檔案放置在此程式目錄中
+
+⚠️  首次使用需要完成瀏覽器授權流程
+✅ 授權完成後會自動儲存 token.json
+
+📁 可存取檔案類型：
+• 企業內部共享檔案
+• 您擁有的私人檔案  
+• 明確分享給您的檔案
+        """
+        messagebox.showinfo("企業版設定說明", info_text)
+    
+    def fetch_enterprise_file():
+        """取得企業版檔案"""
+        url = url_entry.get().strip()
+        if not url:
+            messagebox.showerror("錯誤", "請輸入 Google Drive 檔案連結")
+            return
+        
+        try:
+            status_label.config(text="🔄 正在透過 API 下載檔案...")
+            dialog.update()
+            
+            # 使用企業版 API 下載
+            file_path = download_enterprise_google_drive_file(url)
+            
+            if file_path:
+                status_label.config(text="✅ 檔案下載成功！正在開啟...")
+                dialog.update()
+                
+                # 開啟檔案
+                open_file_with_system(file_path)
+                
+                status_label.config(text="🎉 檔案已成功開啟！")
+                
+                # 顯示成功訊息
+                success_msg = f"""
+✅ 企業版 Google Drive 檔案已成功開啟！
+
+📁 檔案位置: {file_path}
+🔐 透過企業認證存取
+
+您現在可以使用這個檔案進行分析。
+                """
+                messagebox.showinfo("成功", success_msg)
+            else:
+                status_label.config(text="❌ 下載失敗")
+                
+        except Exception as e:
+            error_msg = f"企業版存取失敗: {str(e)}"
+            status_label.config(text="❌ " + error_msg)
+            messagebox.showerror("錯誤", error_msg)
+    
+    # 創建對話框
+    dialog = tk.Toplevel()
+    dialog.title("企業版 Google Drive 檔案連接器")
+    dialog.geometry("600x500")
+    dialog.resizable(True, True)
+    
+    # 設定對話框居中
+    dialog.update_idletasks()
+    x = (dialog.winfo_screenwidth() // 2) - (600 // 2)
+    y = (dialog.winfo_screenheight() // 2) - (500 // 2)
+    dialog.geometry(f"600x500+{x}+{y}")
+    
+    # 主框架
+    main_frame = tk.Frame(dialog)
+    main_frame.pack(expand=True, fill="both", padx=20, pady=20)
+    
+    # 標題
+    title_label = tk.Label(main_frame, 
+                          text="🏢 企業版 Google Drive 存取", 
+                          font=("Arial", 16, "bold"))
+    title_label.pack(pady=(0, 20))
+    
+    # 說明文字
+    info_text = """
+    透過 Google Drive API 存取企業內部檔案
+    支援：企業共享檔案、私人檔案、特定權限檔案
+    """
+    info_label = tk.Label(main_frame, text=info_text, font=("Arial", 10))
+    info_label.pack(pady=(0, 20))
+    
+    # URL 輸入區域
+    url_frame = tk.Frame(main_frame)
+    url_frame.pack(fill="x", pady=(0, 20))
+    
+    tk.Label(url_frame, text="Google Drive 檔案連結:", font=("Arial", 11, "bold")).pack(anchor="w")
+    url_entry = tk.Entry(url_frame, font=("Arial", 10), width=70)
+    url_entry.pack(fill="x", pady=(5, 0))
+    url_entry.insert(0, "https://drive.google.com/file/d/YOUR_FILE_ID/view")
+    
+    # 按鈕區域
+    button_frame = tk.Frame(main_frame)
+    button_frame.pack(fill="x", pady=20)
+    
+    # 設定說明按鈕
+    setup_button = tk.Button(button_frame, 
+                           text="📋 設定說明", 
+                           font=("Arial", 10),
+                           command=show_auth_info)
+    setup_button.pack(side="left", padx=(0, 10))
+    
+    # 下載按鈕
+    download_button = tk.Button(button_frame, 
+                              text="🔐 透過 API 下載檔案", 
+                              font=("Arial", 11, "bold"),
+                              command=fetch_enterprise_file)
+    download_button.pack(side="left", padx=10)
+    
+    # 關閉按鈕
+    close_button = tk.Button(button_frame, 
+                           text="關閉", 
+                           font=("Arial", 10),
+                           command=dialog.destroy)
+    close_button.pack(side="right")
+    
+    # 狀態顯示
+    status_label = tk.Label(main_frame, 
+                           text="🔐 準備透過企業認證存取檔案", 
+                           font=("Arial", 10), 
+                           fg="blue")
+    status_label.pack(pady=(20, 0))
+    
+    # 詳細資訊
+    details_text = """
+📌 企業版功能特色：
+• 🏢 存取企業內部共享檔案
+• 🔐 支援私人和受限檔案
+• 👥 透過您的企業帳號認證
+• 🛡️  符合企業安全政策
+
+⚙️  技術說明：
+• 使用 Google Drive API v3
+• OAuth 2.0 企業認證流程
+• 自動 Token 管理和更新
+• 支援所有檔案格式
+    """
+    
+    details_label = tk.Label(main_frame, 
+                           text=details_text, 
+                           font=("Arial", 9),
+                           fg="gray",
+                           justify="left")
+    details_label.pack(pady=(20, 0), anchor="w")
+
+def download_enterprise_google_drive_file(url, target_dir=None):
+    """使用 Google Drive API 下載檔案（支援企業版和私人檔案）"""
+    # 檢查是否已安裝必要套件
+    try:
+        from google.auth.transport.requests import Request
+        from google.oauth2.credentials import Credentials
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        from googleapiclient.discovery import build
+        from googleapiclient.errors import HttpError
+        import io
+        from googleapiclient.http import MediaIoBaseDownload
+    except ImportError as e:
+        error_msg = """
+❌ 缺少必要套件！
+
+請安裝 Google Drive API 套件：
+pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+然後重新啟動程式。
+        """
+        raise Exception(error_msg)
+    
+    try:
+        
+        # OAuth 2.0 權限範圍 - 修正為更完整的權限
+        SCOPES = [
+            'https://www.googleapis.com/auth/drive.readonly',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
+        
+        # 憑證檔案路徑
+        credentials_file = 'credentials.json'
+        token_file = 'token.json'
+        
+        # 檢查憑證檔案
+        if not os.path.exists(credentials_file):
+            error_msg = """
+❌ 找不到 credentials.json 檔案！
+
+請按照以下步驟設定：
+1. 前往 Google Cloud Console
+2. 建立專案並啟用 Google Drive API  
+3. 建立 OAuth 2.0 憑證
+4. 下載 credentials.json 到程式目錄
+
+詳細設定說明請點擊「📋 設定說明」按鈕。
+            """
+            raise Exception(error_msg)
+        
+        creds = None
+        
+        # 載入現有 token
+        if os.path.exists(token_file):
+            creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+        
+        # 如果沒有有效認證，執行 OAuth 流程
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                print("🔄 正在更新認證 token...")
+                creds.refresh(Request())
+            else:
+                print("🔐 啟動 OAuth 認證流程...")
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_file, SCOPES)
+                creds = flow.run_local_server(port=0)
+            
+            # 儲存認證資訊
+            with open(token_file, 'w') as token:
+                token.write(creds.to_json())
+            print("✅ 認證資訊已儲存")
+        
+        # 建立 Google Drive API 服務
+        service = build('drive', 'v3', credentials=creds)
+        
+        # 提取檔案 ID
+        file_id = extract_google_drive_file_id(url)
+        if not file_id:
+            raise Exception("無法從 URL 中提取檔案 ID")
+        
+        print(f"📁 正在存取檔案 ID: {file_id}")
+        
+        # 取得檔案資訊和權限檢查
+        try:
+            file_metadata = service.files().get(fileId=file_id, fields='id,name,size,owners,permissions,shared').execute()
+            file_name = file_metadata.get('name', f"downloaded_file_{file_id}")
+            file_size = file_metadata.get('size', 'Unknown')
+            
+            print(f"📄 檔案名稱: {file_name}")
+            print(f"📊 檔案大小: {file_size} bytes" if file_size != 'Unknown' else "📊 檔案大小: Unknown")
+            print(f"🔍 檔案 ID: {file_id}")
+            
+        except HttpError as metadata_error:
+            if metadata_error.resp.status == 403:
+                error_msg = f"""
+❌ 權限錯誤 (檔案資訊存取被拒絕)
+
+可能的原因：
+1. 檔案權限設定問題
+2. OAuth 權限範圍不足
+3. 檔案不存在或已被刪除
+
+建議解決方案：
+1. 刪除 token.json 檔案重新認證
+2. 確認檔案 ID 正確: {file_id}
+3. 檢查 Google Cloud Console 的 OAuth 設定
+                """
+                raise Exception(error_msg)
+            else:
+                raise metadata_error
+        
+        # 設定下載目錄
+        if target_dir is None:
+            target_dir = os.path.join(os.getcwd(), 'temp')
+        os.makedirs(target_dir, exist_ok=True)
+        
+        # 設定檔案路徑
+        file_path = os.path.join(target_dir, file_name)
+        
+        # 下載檔案
+        print("⬇️  正在下載檔案...")
+        request = service.files().get_media(fileId=file_id)
+        
+        with open(file_path, 'wb') as file_handle:
+            downloader = MediaIoBaseDownload(file_handle, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                if status:
+                    progress = int(status.progress() * 100)
+                    print(f"⬇️  下載進度: {progress}%")
+        
+        print(f"✅ 檔案下載完成: {file_path}")
+        return file_path
+        
+    except HttpError as error:
+        if error.resp.status == 403:
+            error_msg = "❌ 存取被拒絕：您沒有權限存取此檔案"
+        elif error.resp.status == 404:
+            error_msg = "❌ 檔案不存在：請檢查檔案 ID 是否正確"
+        else:
+            error_msg = f"❌ Google Drive API 錯誤: {error}"
+        raise Exception(error_msg)
+        
+    except Exception as e:
+        raise Exception(f"企業版下載失敗: {str(e)}")
+
 if __name__ == "__main__":
     # 測試功能
     print("Google Drive 工具模組測試")

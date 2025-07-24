@@ -4,58 +4,104 @@
 Google Drive 測試專案 PyInstaller 配置檔案
 
 功能：打包 Google Drive 測試專案為獨立執行檔
-作者：Data Analysis Tools
+版本：2.0 (2025-07-24)
+Python：3.12+
+PyInstaller：6.9+
 """
 
 import os
 import sys
 from pathlib import Path
 
-# 獲取當前目錄
-current_dir = Path(os.getcwd())
+# 獲取專案根目錄
+project_root = Path(os.getcwd())
+print(f"專案根目錄: {project_root}")
 
-# 分析設定
+# 確保路徑存在
+main_script = project_root / 'main.py'
+if not main_script.exists():
+    raise FileNotFoundError(f"找不到主程式檔案: {main_script}")
+
+# ===========================================
+# PyInstaller 分析配置
+# ===========================================
+
 a = Analysis(
     # 主程式檔案
-    [os.path.join(current_dir, 'main.py')],
+    [str(main_script)],
     
-    # 隱藏的導入模組
-    pathex=[str(current_dir)],
+    # 搜尋路徑
+    pathex=[str(project_root)],
     
-    # 需要包含的模組
+    # 二進位檔案 (通常為空)
     binaries=[],
     
-    # 需要包含的套件
+    # 資料檔案
     datas=[
-        # 包含 README 和說明文件（可選）
-        (os.path.join(current_dir, 'README.md'), '.'),
-        (os.path.join(current_dir, 'USAGE_GUIDE.md'), '.'),
+        # 說明文件
+        (str(project_root / 'README.md'), '.'),
+        (str(project_root / 'USAGE_GUIDE.md'), '.'),
+        (str(project_root / 'ENTERPRISE_SETUP.md'), '.'),
+        # 注意：不包含 credentials.json 和 token.json (安全考量)
     ],
     
-    # 隱藏的導入模組
+    # 隱藏導入 (確保所有依賴都被包含)
     hiddenimports=[
+        # 標準庫
         'tkinter',
         'tkinter.messagebox',
         'tkinter.filedialog',
+        'tkinter.ttk',
+        'webbrowser',
+        'tempfile',
+        'platform',
+        'subprocess',
+        'threading',
+        'json',
+        'os',
+        're',
+        'sys',
+        'pathlib',
+        'urllib.parse',
+        'urllib.request',
+        'urllib.error',
+        
+        # Google Drive 相關
         'gdown',
         'requests',
         'urllib3',
         'certifi',
         'charset_normalizer',
         'idna',
-        'tempfile',
-        'platform',
-        'subprocess',
-        'os',
-        're',
-        'sys',
+        
+        # Google API 相關
+        'google.auth',
+        'google.auth.transport',
+        'google.auth.transport.requests',
+        'google_auth_oauthlib',
+        'google_auth_oauthlib.flow',
+        'googleapiclient',
+        'googleapiclient.discovery',
+        'googleapiclient.errors',
+        'googleapiclient.http',
+        'google_auth_httplib2',
+        
+        # 資料處理
+        'pandas',
+        'openpyxl',
+        'csv',
+        
+        # 其他可能需要的模組
+        'pkg_resources',
+        'packaging',
+        'setuptools',
     ],
     
-    # 排除的模組（減少檔案大小）
+    # 排除的模組 (減少檔案大小)
     excludes=[
+        # 大型不需要的套件
         'matplotlib',
-        'numpy',
-        'pandas',
+        'numpy.testing',
         'scipy',
         'PIL',
         'cv2',
@@ -68,9 +114,26 @@ a = Analysis(
         'docutils',
         'pytest',
         'unittest',
+        'test',
+        'tests',
+        '_pytest',
+        
+        # 開發工具
+        'black',
+        'isort',
+        'flake8',
+        'mypy',
+        
+        # 不需要的標準庫模組
+        'pdb',
+        'pydoc',
+        'doctest',
+        'profile',
+        'cProfile',
+        'pstats',
     ],
     
-    # 鉤子函數
+    # 鉤子函數路徑
     hookspath=[],
     
     # 鉤子配置
@@ -79,17 +142,26 @@ a = Analysis(
     # 執行時鉤子
     runtime_hooks=[],
     
-    # 排除的檔案
+    # 不打包的二進位檔案
     excludes_binaries=[],
     
-    # 是否包含所有檔案
+    # 是否使用存檔模式
     noarchive=False,
+    
+    # 最佳化設定
+    optimize=0,
 )
 
-# 清理分析結果
+# ===========================================
+# PYZ 配置 (Python 字節碼存檔)
+# ===========================================
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
-# 執行檔設定
+# ===========================================
+# 執行檔配置
+# ===========================================
+
 exe = EXE(
     pyz,
     a.scripts,
@@ -99,56 +171,78 @@ exe = EXE(
     [],
     
     # 執行檔名稱
-    name='Google_Drive_Test',
+    name='GoogleDriveTest',
     
-    # 除錯模式
+    # 除錯設定
     debug=False,
-    
-    # 啟動模式
     bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,  # 啟用 UPX 壓縮 (如果可用)
+    upx_exclude=[],
     
-    # 是否為控制台應用程式
-    console=False,  # 設為 False 隱藏控制台視窗
-    
-    # 是否為 Windows 服務
+    # 控制台設定
+    console=False,  # GUI 應用程式，隱藏控制台
     disable_windowed_traceback=False,
     
-    # 目標架構
+    # 目標架構 (None = 自動檢測)
     target_arch=None,
     
-    # 代碼簽名標識
+    # 代碼簽名 (macOS/Windows)
     codesign_identity=None,
-    
-    # 權利檔案
     entitlements_file=None,
     
-    # 圖示檔案（可選）
-    # icon=os.path.join(current_dir, 'icon.ico'),  # Windows
-    # icon=os.path.join(current_dir, 'icon.icns'), # macOS
-    
-    # 版本資訊（可選）
-    version_file=None,
+    # 圖示檔案 (可選)
+    # icon='icon.ico',     # Windows
+    # icon='icon.icns',    # macOS
 )
 
-# 應用程式設定（macOS 專用）
-app = BUNDLE(
-    exe,
-    
-    # 應用程式名稱
-    name='Google Drive Test.app',
-    
-    # 圖示檔案（macOS）
-    # icon=os.path.join(current_dir, 'icon.icns'),
-    
-    # 應用程式資訊
-    info_plist={
-        'CFBundleName': 'Google Drive Test',
-        'CFBundleDisplayName': 'Google Drive Test',
-        'CFBundleIdentifier': 'com.dataanalysis.google-drive-test',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
-        'NSHighResolutionCapable': True,
-        'LSMinimumSystemVersion': '10.10',
-        'NSRequiresAquaSystemAppearance': False,
-    },
-) 
+# ===========================================
+# macOS 應用程式包配置
+# ===========================================
+
+if sys.platform == 'darwin':  # macOS
+    app = BUNDLE(
+        exe,
+        
+        # 應用程式名稱
+        name='Google Drive Test.app',
+        
+        # 圖示檔案
+        # icon='icon.icns',
+        
+        # 應用程式資訊
+        info_plist={
+            'CFBundleName': 'Google Drive Test',
+            'CFBundleDisplayName': 'Google Drive Test',
+            'CFBundleIdentifier': 'com.dataanalysis.googledrive-test',
+            'CFBundleVersion': '2.0.0',
+            'CFBundleShortVersionString': '2.0.0',
+            'CFBundleExecutable': 'GoogleDriveTest',
+            
+            # macOS 特定設定
+            'NSHighResolutionCapable': True,
+            'LSMinimumSystemVersion': '10.15',  # macOS Catalina+
+            'NSRequiresAquaSystemAppearance': False,
+            'LSApplicationCategoryType': 'public.app-category.productivity',
+            
+            # 權限設定
+            'NSNetworkUsageDescription': '需要網路存取權限來下載 Google Drive 檔案',
+            'NSFileSystemUsageDescription': '需要檔案系統存取權限來儲存下載的檔案',
+        },
+        
+        # 包含的框架 (如果需要)
+        bundle_identifier='com.dataanalysis.googledrive-test',
+    )
+
+# ===========================================
+# 建置資訊
+# ===========================================
+
+print("=" * 50)
+print("Google Drive Test 專案建置配置")
+print("=" * 50)
+print(f"主程式: {main_script}")
+print(f"專案目錄: {project_root}")
+print(f"目標平台: {sys.platform}")
+print(f"Python 版本: {sys.version}")
+print("=" * 50) 
