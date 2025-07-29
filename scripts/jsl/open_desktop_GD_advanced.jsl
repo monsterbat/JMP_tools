@@ -1,0 +1,122 @@
+// 跨平台檔案開啟腳本
+// 支援 Windows (桌面) 和 Mac (Google Drive)
+
+Names Default To Here(1);
+
+// 偵測作業系統的函數
+detectOS = Function({},
+    // 檢查 Windows 特有的環境變數
+    If(!Is Missing(Get Environment Variable("USERPROFILE")),
+        Return("Windows");
+    );
+    
+    // 檢查 Mac 特有的環境變數
+    If(!Is Missing(Get Environment Variable("USER")),
+        Return("Mac");
+    );
+    
+    // 如果都檢測不到，回傳未知
+    Return("Unknown");
+);
+
+// 建構檔案路徑的函數
+buildFilePath = Function({osType},
+    {userName, basePath},
+    
+    If(osType == "Windows",
+        // Windows 系統設定
+        userName = Get Environment Variable("USERNAME");
+        If(Is Missing(userName) | userName == "",
+            Throw("無法獲取 Windows 用戶名");
+        );
+        // 使用正斜線，JSL 會自動轉換
+        basePath = "C:/Users/" || userName || "/Desktop/test_data.csv";
+        Return(basePath);
+    );
+    
+    If(osType == "Mac",
+        // Mac 系統設定
+        userName = Get Environment Variable("USER");
+        If(Is Missing(userName) | userName == "",
+            Throw("無法獲取 Mac 用戶名");
+        );
+        basePath = "/Users/" || userName || "/Library/CloudStorage/GoogleDrive-n32242725@gmail.com/我的雲端硬碟/100_Work/meta/test_data.csv";
+        Return(basePath);
+    );
+    
+    // 未知系統
+    Throw("不支援的作業系統：" || osType);
+);
+
+// 主程式
+Try(
+    // 偵測作業系統
+    currentOS = detectOS();
+    Write("偵測到作業系統：" || currentOS);
+    
+    // 建構檔案路徑
+    filePath = buildFilePath(currentOS);
+    Write("目標檔案路徑：" || filePath);
+    
+    // 檢查檔案是否存在
+    If(File Exists(filePath),
+        // 檔案存在，嘗試開啟
+        Try(
+            dt = Open(filePath);
+            Write("✅ 成功開啟檔案！");
+            
+            // 顯示檔案資訊
+            If(!Is Missing(dt),
+                Write("檔案名稱：" || (dt << Get Name));
+                Write("資料列數：" || N Rows(dt));
+                Write("資料欄數：" || N Col(dt));
+            );
+        ,
+            // 開啟檔案失敗
+            Write("❌ 檔案存在但無法開啟：" || exception_msg);
+            New Window("開啟失敗", <<Modal,
+                V List Box(
+                    Text Box("檔案存在但無法開啟"),
+                    Text Box("錯誤訊息：" || Char(exception_msg)),
+                    Button Box("確定", Current Window() << Close Window)
+                )
+            );
+        );
+    ,
+        // 檔案不存在
+        Write("❌ 找不到檔案：" || filePath);
+        
+        // 根據系統提供不同的建議
+        If(currentOS == "Windows",
+            suggestion = "請將 test_data.csv 檔案放置到您的桌面";
+        , currentOS == "Mac",
+            suggestion = "請檢查 Google Drive 是否已同步，並確認檔案位於指定路徑";
+        ,
+            suggestion = "請檢查檔案路徑是否正確";
+        );
+        
+        New Window("檔案未找到", <<Modal,
+            V List Box(
+                Text Box("找不到指定的檔案"),
+                Text Box(""),
+                Text Box("檔案路徑："),
+                Text Box(filePath, <<Set Font Style("Courier")),
+                Text Box(""),
+                Text Box("建議："),
+                Text Box(suggestion),
+                Text Box(""),
+                H Center Box(Button Box("確定", Current Window() << Close Window))
+            )
+        );
+    );
+,
+    // 捕捉所有錯誤
+    Write("❌ 執行過程中發生錯誤：" || exception_msg);
+    New Window("執行錯誤", <<Modal,
+        V List Box(
+            Text Box("腳本執行時發生錯誤"),
+            Text Box("錯誤訊息：" || Char(exception_msg)),
+            Button Box("確定", Current Window() << Close Window)
+        )
+    );
+); 

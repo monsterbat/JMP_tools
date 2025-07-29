@@ -1,0 +1,25 @@
+// 偵測作業系統
+// Windows 系統會有 USERPROFILE 環境變數，Mac 系統則沒有
+isWindows = !Is Missing(Get Environment Variable("USERPROFILE"));
+
+If(isWindows,
+    // Windows 系統：導到桌面
+    userName = Get Environment Variable("USERNAME");
+    filePath = "C:\Users\" || userName || "\Desktop\test_data.csv";
+    Write("偵測到 Windows 系統，用戶：" || userName);
+,
+    // Mac 系統：導到 Google Drive
+    userName = Get Environment Variable("USER");
+    filePath = "/Users/" || userName || "/Library/CloudStorage/GoogleDrive-n32242725@gmail.com/我的雲端硬碟/100_Work/meta/test_data.csv";
+    Write("偵測到 Mac 系統，用戶：" || userName);
+);
+
+Write("檔案路徑：" || filePath);
+
+// 檢查文件是否存在
+If(File Exists(filePath),
+    Open(filePath);
+    Write("成功打開文件！");
+,
+    Write("警告：找不到指定的文件，請檢查檔案是否存在於：" || filePath);
+);

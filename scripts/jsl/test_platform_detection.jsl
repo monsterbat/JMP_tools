@@ -1,0 +1,41 @@
+// 平台偵測測試腳本
+Names Default To Here(1);
+
+Write("=== 平台偵測測試 ===");
+
+// 測試環境變數
+Write("環境變數測試：");
+Write("USERPROFILE (Windows): " || Char(Get Environment Variable("USERPROFILE")));
+Write("USERNAME (Windows): " || Char(Get Environment Variable("USERNAME")));
+Write("USER (Mac/Linux): " || Char(Get Environment Variable("USER")));
+Write("HOME: " || Char(Get Environment Variable("HOME")));
+
+// 偵測作業系統
+isWindows = !Is Missing(Get Environment Variable("USERPROFILE"));
+isMac = !Is Missing(Get Environment Variable("USER")) & Is Missing(Get Environment Variable("USERPROFILE"));
+
+Write("");
+Write("系統偵測結果：");
+If(isWindows,
+    Write("✅ 偵測到 Windows 系統");
+    userName = Get Environment Variable("USERNAME");
+    testPath = "C:/Users/" || userName || "/Desktop/";
+    Write("Windows 桌面路徑：" || testPath);
+    Write("桌面資料夾是否存在：" || Char(Directory Exists(testPath)));
+);
+
+If(isMac,
+    Write("✅ 偵測到 Mac 系統");
+    userName = Get Environment Variable("USER");
+    testPath = "/Users/" || userName || "/Desktop/";
+    Write("Mac 桌面路徑：" || testPath);
+    Write("桌面資料夾是否存在：" || Char(Directory Exists(testPath)));
+    
+    // 測試 Google Drive 路徑
+    gdPath = "/Users/" || userName || "/Library/CloudStorage/";
+    Write("Google Drive 基礎路徑：" || gdPath);
+    Write("CloudStorage 資料夾是否存在：" || Char(Directory Exists(gdPath)));
+);
+
+Write("");
+Write("=== 測試完成 ==="); 
