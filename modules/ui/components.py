@@ -1,20 +1,89 @@
 import tkinter as tk
-from tkinter import Label, Button, Text, StringVar, messagebox
+from tkinter import Label, Button, Text, StringVar, messagebox, ttk
 from modules.utils.path_helper import resource_path
 from modules.utils.version import get_app_title, get_version_info
 from modules.core.file_operations import open_duplicate_process, open_user_guide, open_box_plot_tool, open_correlation_tool, open_box_plot_lite, open_quick_report, open_exclude_outliers, open_data_file_and_update_ui, process_duplicate_with_file, process_spec_setup_with_file, process_outliers_with_file, open_normal_distribution, open_file_jsl, open_file_jsl_beta, open_best_fit_beta, open_google_drive_file
 from modules.core.spec_setup import open_spec_setup
 
 def create_main_window():
-    """Create the main window"""
+    """Create the main window with scrollable content"""
     root = tk.Tk()
     root.title(get_app_title())
-    root.geometry("850x800")  # Adjust height to fit new analysis tools section
+    
+    # Set window size and center it on screen
+    window_width = 750
+    window_height = 550
+    
+    # Get screen dimensions
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    
+    # Calculate position to center the window
+    center_x = int(screen_width/2 - window_width/2)
+    center_y = int(screen_height/2 - window_height/2)
+    
+    # Set geometry with centered position
+    root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+    root.minsize(600, 400)  # Minimum window size
+    
+    # Create main container frame
+    main_frame = tk.Frame(root)
+    main_frame.pack(fill="both", expand=True)
+    
+    # Create canvas and scrollbar
+    canvas = tk.Canvas(main_frame)
+    scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+    
+    # Configure scrollable frame
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+    
+    # Create window in canvas with centering
+    canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="n")
+    canvas.configure(yscrollcommand=scrollbar.set)
+    
+    # Function to center the content horizontally
+    def center_content(event=None):
+        canvas_width = canvas.winfo_width()
+        frame_width = scrollable_frame.winfo_reqwidth()
+        
+        # Center the frame horizontally
+        x_position = max(0, (canvas_width - frame_width) // 2)
+        canvas.coords(canvas_window, x_position, 0)
+    
+    # Bind canvas resize event to recenter content
+    canvas.bind("<Configure>", center_content)
+    
+    # Pack canvas and scrollbar
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # Bind mousewheel to canvas
+    def _on_mousewheel(event):
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    # Bind mousewheel events
+    canvas.bind("<MouseWheel>", _on_mousewheel)  # Windows
+    canvas.bind("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # Linux
+    canvas.bind("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # Linux
+    
+    # Store references for later use
+    root.scrollable_frame = scrollable_frame
+    root.canvas = canvas
+    
+    # Initial centering after window is created
+    root.after(100, center_content)
+    
     return root
 
 def create_header_ui(root):
     """Create header section with description and instruction link"""
-    frame = tk.Frame(root)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.Frame(parent)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Description text
@@ -24,9 +93,8 @@ def create_header_ui(root):
 
     # Instruction link
     link_text = tk.Label(frame, text="➡️ Click here to view the instructions.", 
-                         font=("Arial", 14, "bold"), anchor="center", justify="center", 
-                         cursor="hand2")
-    link_text.pack(fill="x")
+                         font=("Arial", 14, "bold"), cursor="hand2")
+    link_text.pack(anchor="center")
     
     # Bind click event to open user guide
     link_text.bind("<Button-1>", lambda e: open_user_guide())
@@ -36,7 +104,9 @@ def create_header_ui(root):
 
 def create_quick_analysis_ui(root):
     """Create Quick analysis section with Quick report button"""
-    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.LabelFrame(parent, bd=2, relief="groove", padx=10, pady=10)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center title
@@ -60,7 +130,9 @@ def create_quick_analysis_ui(root):
 
 def create_open_data_ui(root):
     """Create independent Open Data section without border"""
-    frame = tk.Frame(root)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.Frame(parent)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center button frame
@@ -88,7 +160,9 @@ def create_open_data_ui(root):
 
 def create_data_process_ui(root):
     """Create the Data Process block with three function buttons"""
-    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.LabelFrame(parent, bd=2, relief="groove", padx=10, pady=10)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center title
@@ -118,7 +192,9 @@ def create_data_process_ui(root):
 
 def create_process_capability_ui(root, on_open_analysis):
     """Create Process Capability section with Best Fit and Normal distribution buttons"""
-    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.LabelFrame(parent, bd=2, relief="groove", padx=10, pady=10)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center title
@@ -163,7 +239,9 @@ def create_process_capability_ui(root, on_open_analysis):
 
 def create_report_generate_ui(root, jmp_file_path, on_extract):
     """Create Report Generate section with JSL input and extract button"""
-    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.LabelFrame(parent, bd=2, relief="groove", padx=10, pady=10)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center title
@@ -183,7 +261,9 @@ def create_report_generate_ui(root, jmp_file_path, on_extract):
 
 def create_analysis_tools_ui(root):
     """Create analysis tools section with BoxPlot and Correlation buttons"""
-    frame = tk.LabelFrame(root, bd=2, relief="groove", padx=10, pady=10)
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
+    frame = tk.LabelFrame(parent, bd=2, relief="groove", padx=10, pady=10)
     frame.pack(fill="x", padx=10, pady=10)
 
     # Center title
@@ -228,8 +308,10 @@ def create_analysis_tools_ui(root):
 
 def create_app_info_ui(root):
     """Create application info section with version, author info and instruction button"""
+    # Use scrollable_frame if available, otherwise use root
+    parent = getattr(root, 'scrollable_frame', root)
     # Create info frame
-    frame = tk.Frame(root)
+    frame = tk.Frame(parent)
     frame.pack(fill="x", padx=10, pady=5)
     
     # Center button frame

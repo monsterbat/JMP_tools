@@ -1,0 +1,120 @@
+// Google Drive 路徑檢測工具
+// 用途：幫助用戶找到他們的 Google Drive 路徑和帳戶資訊
+
+Names Default To Here(1);
+
+Write("=== Google Drive 路徑檢測工具 ===");
+Write("");
+
+// 取得用戶名
+userName = Get Environment Variable("USER");
+Write("目前用戶：" || userName);
+
+// CloudStorage 基礎路徑
+cloudStoragePath = "/Users/" || userName || "/Library/CloudStorage/";
+Write("CloudStorage 基礎路徑：" || cloudStoragePath);
+
+// 檢查 CloudStorage 資料夾是否存在
+If(Directory Exists(cloudStoragePath),
+    Write("✅ CloudStorage 資料夾存在");
+    Write("");
+    
+    // 列出所有 CloudStorage 中的項目
+    allItems = Files In Directory(cloudStoragePath);
+    Write("CloudStorage 中的所有項目：");
+    For(i = 1, i <= N Items(allItems), i++,
+        item = allItems[i];
+        itemPath = cloudStoragePath || item;
+        If(Directory Exists(itemPath),
+            Write("📁 " || item);
+        ,
+            Write("📄 " || item);
+        );
+    );
+    
+    Write("");
+    
+    // 專門搜尋 Google Drive 相關資料夾
+    Write("搜尋 Google Drive 相關資料夾：");
+    googleDriveFolders = {};
+    For(i = 1, i <= N Items(allItems), i++,
+        item = allItems[i];
+        If(Contains(item, "GoogleDrive-") & Directory Exists(cloudStoragePath || item),
+            Insert Into(googleDriveFolders, item);
+            Write("🟢 找到：" || item);
+        );
+    );
+    
+    // 分析找到的 Google Drive 資料夾
+    If(N Items(googleDriveFolders) > 0,
+        Write("");
+        Write("=== Google Drive 帳戶分析 ===");
+        For(i = 1, i <= N Items(googleDriveFolders), i++,
+            folder = googleDriveFolders[i];
+            // 提取帳戶名稱 (移除 GoogleDrive- 前綴)
+            account = Substr(folder, 13); // "GoogleDrive-" 有 12 個字符
+            Write("帳戶 " || Char(i) || "：" || account);
+            
+            // 檢查常見的 Google Drive 內部結構
+            fullPath = cloudStoragePath || folder;
+            Write("   完整路徑：" || fullPath);
+            
+            // 檢查是否有「我的雲端硬碟」資料夾
+            myDrivePath = fullPath || "/我的雲端硬碟";
+            If(Directory Exists(myDrivePath),
+                Write("   ✅ 找到「我的雲端硬碟」資料夾");
+                
+                // 檢查目標路徑是否存在
+                targetPath = myDrivePath || "/100_Work/meta";
+                If(Directory Exists(targetPath),
+                    Write("   ✅ 找到目標路徑：100_Work/meta");
+                    
+                    // 檢查 test_data.csv 是否存在
+                    testFilePath = targetPath || "/test_data.csv";
+                    If(File Exists(testFilePath),
+                        Write("   ✅ 找到目標檔案：test_data.csv");
+                        Write("   🎯 完整檔案路徑：" || testFilePath);
+                    ,
+                        Write("   ❌ 找不到 test_data.csv");
+                        Write("   💡 建議：請將檔案放在 " || targetPath);
+                    );
+                ,
+                    Write("   ❌ 找不到 100_Work/meta 路徑");
+                    Write("   💡 建議：請檢查 Google Drive 中是否有此資料夾結構");
+                );
+            ,
+                Write("   ❌ 找不到「我的雲端硬碟」資料夾");
+                // 列出實際存在的子資料夾
+                subItems = Files In Directory(fullPath);
+                Write("   📋 實際的子資料夾：");
+                For(j = 1, j <= N Items(subItems), j++,
+                    subItem = subItems[j];
+                    If(Directory Exists(fullPath || "/" || subItem),
+                        Write("      📁 " || subItem);
+                    );
+                );
+            );
+            Write("");
+        );
+    ,
+        Write("❌ 沒有找到任何 Google Drive 資料夾");
+        Write("💡 可能的原因：");
+        Write("   1. Google Drive 尚未安裝");
+        Write("   2. Google Drive 尚未同步");
+        Write("   3. 使用不同的雲端同步方式");
+    );
+,
+    Write("❌ CloudStorage 資料夾不存在");
+    Write("💡 可能的原因：");
+    Write("   1. 這不是 macOS 系統");
+    Write("   2. Google Drive 使用舊版本的同步方式");
+    Write("   3. 使用第三方雲端同步軟體");
+);
+
+Write("");
+Write("=== 檢測完成 ===");
+Write("如果需要手動查找，請：");
+Write("1. 打開 Finder");
+Write("2. 按 Command+Shift+G");
+Write("3. 輸入：~/Library/CloudStorage/");
+Write("4. 查看是否有 GoogleDrive- 開頭的資料夾"); 

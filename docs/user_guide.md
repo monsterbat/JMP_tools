@@ -94,7 +94,7 @@ The software is organized into four main sections:
 ## Contact Information
 For any questions, please contact SC Hsiao
 
-Version: V1.2  
+Version: V1.3  
 Last Updated: 2025/07/05
 
 ---

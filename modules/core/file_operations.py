@@ -107,9 +107,12 @@ def ask_and_open_file(jmp_file_path=None):
         return None
 
 def open_analysis_item(file_path=None):
-    """Open analysis item file"""
-    jsl_path = resource_path("config/best_fit_distribution.jsl")
-    open_file(jsl_path)
+    """Open analysis item file - 原版 Best Fit 功能，顯示 Report Generate 彈出視窗"""
+    try:
+        # 彈出 Report Generate 視窗
+        create_report_generate_popup()
+    except Exception as e:
+        messagebox.showerror("錯誤", f"開啟 Best Fit 功能失敗: {str(e)}")
 
 def open_duplicate_process():
     """Open Exclude Duplicate JSL file"""
@@ -309,13 +312,112 @@ def open_file_jsl_beta():
 def open_best_fit_beta():
     """開啟 Best Fit(beta) 功能 - 支援多欄位 AICc 計算"""
     try:
-        # 步驟1: 選擇檔案
+        # 步驟 0: 先顯示 JMP 資料準備指引
+        show_jmp_data_preparation_guide()
+        
+    except Exception as e:
+        messagebox.showerror("錯誤", f"開啟 Best Fit(beta) 失敗: {str(e)}")
+
+def show_jmp_data_preparation_guide():
+    """顯示 JMP 資料準備指引並等待使用者完成"""
+    try:
+        # 創建指引視窗
+        guide_window = tk.Toplevel()
+        guide_window.title("Best Fit(beta) - 資料準備")
+        guide_window.geometry("700x600")
+        guide_window.grab_set()  # 設為模態視窗
+        
+        # 標題
+        title_label = tk.Label(guide_window, 
+                              text="Best Fit(beta) - 資料準備步驟", 
+                              font=("Arial", 16, "bold"))
+        title_label.pack(pady=15)
+        
+        # 說明文字
+        info_text = """🎯 Best Fit(beta) 需要使用乾淨的 CSV 資料進行分析
+
+📋 請按照以下步驟準備您的資料：
+
+🔧 步驟 1: 在 JMP 中準備資料
+• 確保您已在 JMP 中完成所有資料處理：
+  - Exclude Duplicate（排除重複資料）
+  - Setup Spec（設定規格）  
+  - Exclude Outlier（排除異常值）
+• 確認所有不需要的資料列已標記為 excluded（🚫 符號）
+
+📤 步驟 2: 執行 JSL 腳本匯出乾淨資料
+• 點擊下方「開啟 JSL 腳本」按鈕
+• 在 JMP 中執行該腳本
+• 腳本會自動匯出不含 excluded 資料的 CSV 檔案
+
+✅ 步驟 3: 繼續 Best Fit(beta) 分析
+• CSV 檔案匯出完成後，點擊「繼續分析」按鈕
+• 選擇剛匯出的 CSV 檔案進行 AICc 分析
+
+💡 為什麼需要這樣做？
+• 確保分析結果的準確性
+• 與 JMP 的資料處理邏輯完全一致
+• 避免被排除的資料影響分析結果"""
+        
+        info_label = tk.Label(guide_window, 
+                             text=info_text,
+                             font=("Arial", 11),
+                             justify="left",
+                             anchor="nw")
+        info_label.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # 按鈕框架
+        button_frame = tk.Frame(guide_window)
+        button_frame.pack(pady=15)
+        
+        # 開啟 JSL 腳本按鈕
+        def open_jsl_script():
+            try:
+                jsl_path = resource_path("scripts/jsl/export_non_excluded_data.jsl")
+                open_file(jsl_path)
+            except Exception as e:
+                messagebox.showerror("錯誤", f"開啟 JSL 腳本失敗: {str(e)}")
+        
+        jsl_btn = tk.Button(button_frame, 
+                           text="📄 開啟 JSL 腳本", 
+                           font=("Arial", 12, "bold"), 
+                           command=open_jsl_script,
+                           width=20)
+        jsl_btn.pack(side=tk.LEFT, padx=10)
+        
+        # 繼續分析按鈕
+        def continue_analysis():
+            guide_window.destroy()
+            # 繼續原本的 Best Fit(beta) 流程
+            continue_best_fit_beta_analysis()
+        
+        continue_btn = tk.Button(button_frame, 
+                               text="✅ 繼續分析", 
+                               font=("Arial", 12, "bold"), 
+                               command=continue_analysis,
+                               width=20)
+        continue_btn.pack(side=tk.LEFT, padx=10)
+        
+        # 取消按鈕
+        cancel_btn = tk.Button(button_frame, 
+                             text="取消", 
+                             font=("Arial", 12), 
+                             command=guide_window.destroy,
+                             width=15)
+        cancel_btn.pack(side=tk.LEFT, padx=10)
+        
+    except Exception as e:
+        messagebox.showerror("錯誤", f"顯示資料準備指引失敗: {str(e)}")
+
+def continue_best_fit_beta_analysis():
+    """繼續 Best Fit(beta) 的原始分析流程"""
+    try:
+        # 步驟1: 選擇檔案（現在應該是 CSV 檔案）
         file_path = filedialog.askopenfilename(
-            title="選擇資料檔案",
+            title="選擇匯出的 CSV 檔案",
             filetypes=[
-                ("Excel 檔案", "*.xlsx *.xls"),
                 ("CSV 檔案", "*.csv"),
-                ("JMP 檔案", "*.jmp"),
+                ("Excel 檔案", "*.xlsx *.xls"),
                 ("所有檔案", "*.*")
             ]
         )
@@ -323,18 +425,24 @@ def open_best_fit_beta():
         if not file_path:
             return
         
+        # 原始的 Best Fit(beta) 流程從這裡繼續...
+        # [這裡會包含所有原本的檔案載入和分析邏輯]
+        process_best_fit_beta_file(file_path)
+        
+    except Exception as e:
+        messagebox.showerror("錯誤", f"繼續 Best Fit(beta) 分析失敗: {str(e)}")
+
+def process_best_fit_beta_file(file_path):
+    """處理 Best Fit(beta) 的檔案分析流程"""
+    try:
         # 步驟2: 載入檔案
         try:
             if file_path.endswith(('.xlsx', '.xls')):
                 data = pd.read_excel(file_path)
             elif file_path.endswith('.csv'):
                 data = pd.read_csv(file_path)
-            elif file_path.endswith('.jmp'):
-                data = load_jmp_file(file_path)
-                if data is None:
-                    return
             else:
-                messagebox.showerror("錯誤", "不支援的檔案格式\n支援格式: Excel (.xlsx, .xls), CSV (.csv), JMP (.jmp)")
+                messagebox.showerror("錯誤", "不支援的檔案格式\n支援格式: Excel (.xlsx, .xls), CSV (.csv)")
                 return
         except Exception as e:
             messagebox.showerror("錯誤", f"載入檔案失敗: {str(e)}")
@@ -374,13 +482,20 @@ def open_best_fit_beta():
         instruction_label = tk.Label(selection_window, 
                                    text="請選擇要分析的欄位 (可多選):",
                                    font=("Arial", 11, "bold"))
-        instruction_label.pack(pady=(10, 5))
+        instruction_label.pack(pady=(10, 2))
         
-        # 欄位選擇列表框
+        # 操作說明
+        usage_label = tk.Label(selection_window, 
+                             text="📖 操作方式: 滑鼠拖拽選擇 | Shift+點擊範圍選擇 | Ctrl/Cmd+點擊多選",
+                             font=("Arial", 9), 
+                             fg="gray")
+        usage_label.pack(pady=(0, 8))
+        
+        # 欄位選擇列表框 - 改用 EXTENDED 模式支援 Shift 範圍選擇
         listbox_frame = tk.Frame(selection_window)
         listbox_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
         
-        listbox = Listbox(listbox_frame, selectmode=MULTIPLE, height=10)
+        listbox = Listbox(listbox_frame, selectmode=tk.EXTENDED, height=10)
         scrollbar = Scrollbar(listbox_frame)
         
         listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -392,6 +507,46 @@ def open_best_fit_beta():
         # 添加欄位到列表框
         for col in numeric_columns:
             listbox.insert(tk.END, col)
+        
+        # 添加滑鼠拖拽多選功能
+        def on_drag_select(event):
+            """滑鼠拖拽選擇功能"""
+            try:
+                # 獲取當前滑鼠位置對應的項目索引
+                current_index = listbox.nearest(event.y)
+                
+                # 如果沒有開始拖拽，記錄起始位置
+                if not hasattr(on_drag_select, 'start_index'):
+                    on_drag_select.start_index = current_index
+                
+                # 清除目前選擇
+                listbox.selection_clear(0, tk.END)
+                
+                # 選擇範圍
+                start = min(on_drag_select.start_index, current_index)
+                end = max(on_drag_select.start_index, current_index)
+                
+                for i in range(start, end + 1):
+                    listbox.selection_set(i)
+                    
+            except Exception:
+                pass
+        
+        def on_drag_start(event):
+            """開始拖拽"""
+            on_drag_select.start_index = listbox.nearest(event.y)
+            listbox.selection_clear(0, tk.END)
+            listbox.selection_set(on_drag_select.start_index)
+        
+        def on_drag_end(event):
+            """結束拖拽"""
+            if hasattr(on_drag_select, 'start_index'):
+                del on_drag_select.start_index
+        
+        # 綁定滑鼠事件
+        listbox.bind("<Button-1>", on_drag_start)
+        listbox.bind("<B1-Motion>", on_drag_select)
+        listbox.bind("<ButtonRelease-1>", on_drag_end)
         
         # 按鈕框架
         button_frame = tk.Frame(selection_window)
@@ -432,7 +587,7 @@ def open_best_fit_beta():
         cancel_btn.pack(side=tk.LEFT, padx=5)
         
     except Exception as e:
-        messagebox.showerror("錯誤", f"開啟 Best Fit(beta) 失敗: {str(e)}")
+        messagebox.showerror("錯誤", f"處理 Best Fit(beta) 檔案失敗: {str(e)}")
 
 def calculate_multiple_aicc(data, selected_columns, file_path):
     """計算多個欄位的 AICc 值並顯示結果"""
@@ -1086,3 +1241,145 @@ def create_column_selection_window(data, numeric_columns, file_path):
     cancel_btn = tk.Button(button_frame, text="取消", 
                           command=selection_window.destroy)
     cancel_btn.pack(side=tk.LEFT, padx=5) 
+
+def create_report_generate_popup():
+    """創建 Report Generate 彈出視窗"""
+    try:
+        # 創建彈出視窗
+        popup = tk.Toplevel()
+        popup.title("Report Generate - Best Fit")
+        popup.geometry("700x500")
+        popup.grab_set()  # 設為模態視窗
+        
+        # 標題
+        title_label = tk.Label(popup, 
+                              text="Process capability best fit distribution report generator", 
+                              font=("Arial", 14, "bold"))
+        title_label.pack(pady=15)
+        
+        # Step 1: Select analysis items
+        step1_frame = tk.Frame(popup)
+        step1_frame.pack(pady=10)
+        
+        def open_original_best_fit():
+            try:
+                jsl_path = resource_path("scripts/jsl/best_fit_distribution.jsl")
+                open_file(jsl_path)
+            except Exception as e:
+                messagebox.showerror("錯誤", f"打開 Best Fit 功能失敗: {str(e)}")
+        
+        step1_btn = tk.Button(step1_frame, 
+                             text="Step 1. Select analysis items", 
+                             font=("Arial", 11), 
+                             command=open_original_best_fit,
+                             width=25)
+        step1_btn.pack()
+        
+        # Step 2: JSL code input area
+        step2_label = tk.Label(popup, 
+                              text="Step 2. Copy and paste jsl code below here", 
+                              font=("Arial", 12))
+        step2_label.pack(pady=(20, 10))
+        
+        # JSL 文字輸入框 - 簡化設計，移除 LabelFrame
+        text_input = tk.Text(popup, height=12, width=70, 
+                           font=("Consolas", 11),
+                           wrap=tk.WORD,
+                           bd=2, 
+                           relief="sunken")
+        text_input.pack(fill=tk.BOTH, expand=True, padx=30, pady=(0, 20))
+        
+        # Step 3: Generate button
+        button_frame = tk.Frame(popup)
+        button_frame.pack(pady=10)
+        
+        # 生成報告按鈕
+        def generate_report():
+            try:
+                # 使用現有的 on_extract 函數
+                on_extract(text_input)
+            except Exception as e:
+                messagebox.showerror("錯誤", f"生成報告失敗: {str(e)}")
+        
+        generate_btn = tk.Button(button_frame, 
+                               text="Generate Best fit result", 
+                               font=("Arial", 11), 
+                               command=generate_report,
+                               width=22)
+        generate_btn.pack()
+        
+        # 讓文字輸入框獲得焦點
+        text_input.focus_set()
+        
+    except Exception as e:
+        messagebox.showerror("錯誤", f"創建 Report Generate 視窗失敗: {str(e)}")
+
+def show_jmp_conversion_guide():
+    """顯示 JMP 檔案轉換指引"""
+    try:
+        # 創建指引視窗
+        guide_window = tk.Toplevel()
+        guide_window.title("JMP 資料轉換指引")
+        guide_window.geometry("600x500")
+        guide_window.grab_set()  # 設為模態視窗
+        
+        # 標題
+        title_label = tk.Label(guide_window, 
+                              text="JMP 資料準備指引", 
+                              font=("Arial", 16, "bold"))
+        title_label.pack(pady=15)
+        
+        # 說明文字
+        info_text = """為了確保分析準確性，Best Fit(beta) 需要使用不包含被排除資料的 CSV 檔案。
+
+請按照以下步驟準備您的資料：
+
+🔧 步驟 1: 在 JMP 中執行 JSL 腳本
+• 在 JMP 中開啟您的資料檔案
+• 確認已正確標記要排除的資料列（🚫 符號）
+• 執行下方的 JSL 腳本來匯出乾淨的 CSV 檔案
+
+📁 步驟 2: 重新選擇檔案
+• JSL 腳本會自動匯出 CSV 檔案到桌面
+• 返回 Best Fit(beta) 重新選擇剛匯出的 CSV 檔案
+
+✅ 優點：
+• 只包含未被排除的資料
+• 確保分析結果準確性
+• 與 JMP 的資料處理邏輯一致"""
+        
+        info_label = tk.Label(guide_window, 
+                             text=info_text,
+                             font=("Arial", 11),
+                             justify="left",
+                             anchor="nw")
+        info_label.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # JSL 腳本按鈕
+        button_frame = tk.Frame(guide_window)
+        button_frame.pack(pady=15)
+        
+        def open_jsl_script():
+            try:
+                jsl_path = resource_path("scripts/jsl/export_non_excluded_data.jsl")
+                open_file(jsl_path)
+            except Exception as e:
+                messagebox.showerror("錯誤", f"開啟 JSL 腳本失敗: {str(e)}")
+        
+        jsl_btn = tk.Button(button_frame, 
+                           text="開啟 JSL 腳本", 
+                           font=("Arial", 12, "bold"), 
+                           command=open_jsl_script,
+                           width=20)
+        jsl_btn.pack(side=tk.LEFT, padx=10)
+        
+        # 關閉按鈕
+        close_btn = tk.Button(button_frame, 
+                            text="關閉", 
+                            font=("Arial", 12), 
+                            command=guide_window.destroy,
+                            width=15)
+        close_btn.pack(side=tk.LEFT, padx=10)
+        
+    except Exception as e:
+        messagebox.showerror("錯誤", f"顯示轉換指引失敗: {str(e)}")

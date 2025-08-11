@@ -8,18 +8,56 @@ If(isWindows,
     filePath = "C:\Users\" || userName || "\Desktop\test_data.csv";
     Write("偵測到 Windows 系統，用戶：" || userName);
 ,
-    // Mac 系統：導到 Google Drive
+    // Mac 系統：自動搜尋 Google Drive 路徑
     userName = Get Environment Variable("USER");
-    filePath = "/Users/" || userName || "/Library/CloudStorage/GoogleDrive-n32242725@gmail.com/我的雲端硬碟/100_Work/meta/test_data.csv";
     Write("偵測到 Mac 系統，用戶：" || userName);
+    
+    // 搜尋 Google Drive 資料夾
+    cloudStoragePath = "/Users/" || userName || "/Library/CloudStorage/";
+    Write("搜尋 CloudStorage 路徑：" || cloudStoragePath);
+    
+    // 檢查 CloudStorage 資料夾是否存在
+    If(Directory Exists(cloudStoragePath),
+        // 取得 CloudStorage 資料夾中的所有項目
+        allItems = Files In Directory(cloudStoragePath);
+        Write("CloudStorage 中的項目：" || Char(allItems));
+        
+        // 搜尋以 GoogleDrive- 開頭的資料夾
+        googleDriveFolder = "";
+        For(i = 1, i <= N Items(allItems), i++,
+            currentItem = allItems[i];
+            If(Contains(currentItem, "GoogleDrive-") & Directory Exists(cloudStoragePath || currentItem),
+                googleDriveFolder = currentItem;
+                Break();
+            );
+        );
+        
+        If(googleDriveFolder != "",
+            // 找到 Google Drive 資料夾
+            Write("✅ 找到 Google Drive 資料夾：" || googleDriveFolder);
+            filePath = cloudStoragePath || googleDriveFolder || "/我的雲端硬碟/100_Work/meta/test_data.csv";
+        ,
+            // 找不到 Google Drive 資料夾
+            Write("❌ 找不到 Google Drive 資料夾");
+            filePath = ""; // 設為空值，稍後處理錯誤
+        );
+    ,
+        // CloudStorage 資料夾不存在
+        Write("❌ CloudStorage 資料夾不存在");
+        filePath = ""; // 設為空值，稍後處理錯誤
+    );
 );
 
 Write("檔案路徑：" || filePath);
 
 // 檢查文件是否存在
-If(File Exists(filePath),
+If(filePath != "" & File Exists(filePath),
     Open(filePath);
-    Write("成功打開文件！");
+    Write("✅ 成功打開文件！");
 ,
-    Write("警告：找不到指定的文件，請檢查檔案是否存在於：" || filePath);
+    If(filePath == "",
+        Write("❌ 無法建構檔案路徑");
+    ,
+        Write("❌ 找不到指定的文件：" || filePath);
+    );
 );

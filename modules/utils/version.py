@@ -5,9 +5,9 @@
 
 # 應用程式版本資訊
 APP_NAME = "Data Analysis Tools"
-APP_VERSION = "1.2"
+APP_VERSION = "1.3"
 APP_AUTHOR = "SC Hsiao"
-APP_UPDATE_DATE = "2025/07/09"
+APP_UPDATE_DATE = "2025/01/27"
 APP_DESCRIPTION = "用於數據分析和處理的工具集"
 
 # 獲取格式化的版本資訊
